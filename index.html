@@ -16,7 +16,8 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Lucide React Icons (UMD) -->
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest"></script>
 
     <style>
       /* Custom scrollbar */
@@ -50,6 +51,10 @@
         .no-break {
           break-inside: avoid;
         }
+        /* Cacher les barres de défilement à l'impression */
+        ::-webkit-scrollbar {
+            display: none;
+        }
       }
       
       /* Police manuscrite pour les notes */
@@ -62,8 +67,8 @@
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
   }
 }
@@ -73,11 +78,11 @@
     <div id="root"></div>
 
     <!-- SCRIPT PRINCIPAL -->
-    <script type="text/babel">
+    <script type="text/babel" data-presets="typescript,react">
         // --- 1. INITIALISATION ---
         const { useState, useEffect, useRef, useMemo } = React;
         
-        // Icônes Lucide
+        // Icônes Lucide (chargées via UMD)
         const { 
             BookOpen, ChevronRight, ChevronLeft, Eye, LogIn, AlertCircle, 
             Printer, RotateCcw, Trophy, FileText, List, Grid, Search, 
@@ -86,6 +91,7 @@
 
         // --- 2. DONNÉES & CONSTANTES ---
         
+        // Remplacement de l'enum TS par un objet JS
         const JournalType = {
             ACHAT: 'ACHAT',
             VENTE: 'VENTE',
@@ -95,53 +101,91 @@
         };
 
         const PLAN_COMPTABLE = [
-            { account: "1000", label: "Capital souscrit" },
-            { account: "1010", label: "Capital non appelé (-)" },
-            { account: "5500", label: "Banques - compte courant" },
-            { account: "5501", label: "Banques - chèques émis" },
-            { account: "5700", label: "Caisses - espèces" },
-            { account: "6040", label: "Achats de marchandises" },
-            { account: "7000", label: "Ventes de marchandises" },
-            { account: "4110", label: "T.V.A. à récupérer sur achat" },
-            { account: "4510", label: "T.V.A. à payer s/ ventes" },
-            { account: "4400", label: "Fournisseurs" },
-            { account: "4000", label: "Clients" },
-            // ... (Liste simplifiée pour l'exemple, le code complet contient tout)
-            // J'inclus la liste complète ci-dessous pour que le code fonctionne parfaitement
-            { account: "1020", label: "Capital amorti" }, { account: "1100", label: "Primes d'émission" }, { account: "1300", label: "Réserve légale" }, { account: "2400", label: "Mobilier et matériel de bureau" }, { account: "2410", label: "Matériel roulant" }, { account: "4050", label: "Créances pour emballages à rendre" }, { account: "4440", label: "Factures à recevoir" }, { account: "4450", label: "Dettes pour emballages consignés" }, { account: "4500", label: "Impôts belges sur le résultat" }, { account: "4511", label: "T.V.A. à payer intracommunautaire" }, { account: "4512", label: "T.V.A. à payer import + report" }, { account: "4513", label: "T.V.A. due (par le cocontractant) sur trav. immob." }, { account: "4514", label: "T.V.A. due pour régularisations s/ NCA" }, { account: "4600", label: "Acomptes reçus sur commandes" }, { account: "5400", label: "Valeurs échues à l'encaissement" }, { account: "5800", label: "Virements internes" }, { account: "6000", label: "Achats de matières premières" }, { account: "6010", label: "Achats de fournitures" }, { account: "6020", label: "Achats de services, travaux et études" }, { account: "6050", label: "Achats d'immeubles destinés à la vente" }, { account: "6080", label: "Remises, ristournes et rabais obtenus (-)" }, { account: "6100", label: "Charges locatives terrains" }, { account: "6101", label: "Charges locatives constructions" }, { account: "6102", label: "Charges locatives machines, matériel, outillage" }, { account: "6103", label: "Charges locatives matériel roulant (voitures etc.)" }, { account: "6104", label: "Charges locatives matériel roulant (utilitaires)" }, { account: "6105", label: "Entretien et réparations - terrains" }, { account: "6106", label: "Entretien et réparations - constructions" }, { account: "6108", label: "Entretien et réparations - matériel roulant (voit)" }, { account: "6117", label: "Consommation électricité" }, { account: "6130", label: "Assurance incendie" }, { account: "6134", label: "Assurance matériel roulant (voitures)" }, { account: "6150", label: "Commissions sur ventes" }, { account: "6152", label: "Honoraires comptables" }, { account: "6168", label: "Frais de réception limités" }, { account: "6200", label: "Rémunérations des dirigeants d'entreprise" }, { account: "6530", label: "Charges d'escompte de créances" }, { account: "7010", label: "Ventes de produits finis" }, { account: "7070", label: "Prestations de services" }, { account: "7080", label: "Remises, ristournes et rabais accordés (-)" }, { account: "7400", label: "Subsides d'exploitation" }, { account: "7560", label: "Escomptes obtenus des fournisseurs" }
+            { account: "1000", label: "Capital souscrit" }, { account: "1010", label: "Capital non appelé (-)" }, { account: "1020", label: "Capital amorti" }, { account: "1100", label: "Primes d'émission" }, { account: "1200", label: "Plus-values de réévaluation sur im. incorporelles" }, { account: "1210", label: "Plus-values de réévaluation sur im. corporelles" }, { account: "1211", label: "Quotité non amortie de la plus-value" }, { account: "1212", label: "Quotité amortie de la plus-value" }, { account: "1220", label: "Plus-values de réévaluation sur im. financières" }, { account: "1230", label: "Plus-values de réévaluation sur stocks" }, { account: "1240", label: "Reprises de réd. de valeur sur placement de trésor" }, { account: "1300", label: "Réserve légale" }, { account: "1310", label: "Réserves indisponibles pour actions propres" }, { account: "1311", label: "Autres réserves indisponibles" }, { account: "1320", label: "Réserves immunisées" }, { account: "1330", label: "Réserves disponibles" }, { account: "1400", label: "Bénéfice reporté" }, { account: "1410", label: "Perte reportée (-)" }, { account: "1500", label: "Subsides en capital" }, { account: "1600", label: "Provisions pour pensions et obligations similaires" }, { account: "1610", label: "Provisions pour charges fiscales" }, { account: "1620", label: "Provisions grosses réparations et gros entretiens" }, { account: "1630", label: "Provisions pour autres risques et charges" }, { account: "1680", label: "Impôts différés" }, { account: "1700", label: "Emprunts subordonnés convertibles" }, { account: "1701", label: "Emprunts subordonnés non convertibles" }, { account: "1710", label: "Emprunts obligataires non subordonnés convertibles" }, { account: "1711", label: "Emprunts obligataires non sub. non convertibles" }, { account: "1720", label: "Dettes de location-financement et assimilées" }, { account: "1730", label: "Dettes en compte" }, { account: "1731", label: "Promesses" }, { account: "1732", label: "Crédits d'acceptation" }, { account: "1740", label: "Autres emprunts" }, { account: "1750", label: "Dettes commerciales (Fournisseurs)" }, { account: "1751", label: "Effets à payer" }, { account: "1760", label: "Acomptes reçus sur commandes" }, { account: "1780", label: "Cautionnements reçus en numéraire" }, { account: "1790", label: "Dettes diverses" }, { account: "2000", label: "Frais de constitution et d'augmentation de capital" }, { account: "2009", label: "Amortissements actés sur frais de constit. (-)" }, { account: "2010", label: "Frais d'émission d'emprunts" }, { account: "2020", label: "Autres frais d'établissement" }, { account: "2029", label: "Amortissements actés s/ autres frais d'établis.(-)" }, { account: "2040", label: "Frais de restructuration" }, { account: "2049", label: "Amortissements actés s/ frais de restructurat. (-)" }, { account: "2100", label: "Frais de recherche et développement" }, { account: "2109", label: "Amortissements ou réductions de valeur actés (-)" }, { account: "2110", label: "Concessions, brevets, licences, savoir-faire etc." }, { account: "2119", label: "Amortissements ou réductions de valeur actés (-)" }, { account: "2120", label: "Goodwill" }, { account: "2129", label: "Amort. ou réduc. de valeur actés s/ Goodwill (-)" }, { account: "2130", label: "Acomptes versés" }, { account: "2139", label: "Amort. ou réduc. de valeur actés s/ acomptes (-)" }, { account: "2200", label: "Terrains" }, { account: "2201", label: "Frais d'acquisition et de mise en état" }, { account: "2202", label: "Intérêts intercalaires" }, { account: "2208", label: "Plus-values actées sur terrains" }, { account: "2209", label: "Amort. ou réduc. de valeur actés s/ terrains (-)" }, { account: "2210", label: "Constructions" }, { account: "2218", label: "Plus-values actées sur constructions" }, { account: "2219", label: "Amortissements actés sur constructions (-)" }, { account: "2220", label: "Terrains bâtis" }, { account: "2228", label: "Plus-values actées sur terrain bâtis" }, { account: "2229", label: "Amortissements actés sur terrain bâtis (-)" }, { account: "2230", label: "Autres droits réels sur des immeubles" }, { account: "2238", label: "Plus-values actées autres dr.réel s/ des immeubles" }, { account: "2239", label: "Amort. actés sur autre droit réel s/ des immeub(-)" }, { account: "2300", label: "Installations techniques et machines" }, { account: "2308", label: "Plus-values actées s/ inst.techniques et machines" }, { account: "2309", label: "Amort. actés sur inst.techniques et machines (-)" }, { account: "2320", label: "Outillage" }, { account: "2328", label: "Plus-values actées sur outillage" }, { account: "2329", label: "Amortissements actés sur outillage (-)" }, { account: "2400", label: "Mobilier et matériel de bureau" }, { account: "2408", label: "Plus-values actées sur mobilier et mat. de bureau" }, { account: "2409", label: "Amortissements sur mobilier et mat. de bureau (-)" }, { account: "2410", label: "Matériel roulant" }, { account: "2418", label: "Plus-values actées sur matériel roulant" }, { account: "2419", label: "Amortissements sur matériel roulant (-)" }, { account: "2500", label: "Terrains et constructions" }, { account: "2508", label: "Plus-values actées sur terrains et constructions" }, { account: "2509", label: "Amortissements sur terrains et constructions (-)" }, { account: "2510", label: "Installations, machines et outillage" }, { account: "2518", label: "Plus-values actées s/ instal., mach.et outillage" }, { account: "2519", label: "Amortissements sur inst.,mach.et outillage (-)" }, { account: "2520", label: "Mobilier et matériel roulant" }, { account: "2528", label: "Plus-values actées s/ mobilier et matériel roulant" }, { account: "2529", label: "Amortissements sur matériel roulant (-)" }, { account: "2600", label: "Val. d'acquisition des autres immo. corporelles" }, { account: "2608", label: "Plus-values actées s/ autres immo. corporelles" }, { account: "2609", label: "Amortissements sur autres immo. corporelles (-)" }, { account: "2700", label: "Valeur d'acquisition" }, { account: "2790", label: "Investissements de l'exercice" }, { account: "2800", label: "Participation dans des entreprises liées" }, { account: "2801", label: "Montants non appelés (-)" }, { account: "2808", label: "Plus-values actées" }, { account: "2809", label: "Réductions de valeur actées (-)" }, { account: "2810", label: "Créances sur des entreprises liées" }, { account: "2811", label: "Effets à recevoir" }, { account: "2812", label: "Titres à revenu fixe" }, { account: "2817", label: "Créances douteuses" }, { account: "2819", label: "Réductions de valeur actées (-)" }, { account: "2820", label: "Participation dans entr. avec lien de particip." }, { account: "2821", label: "Montants non appelés (-)" }, { account: "2828", label: "Plus-values actées" }, { account: "2829", label: "Réductions de valeur actées (-)" }, { account: "2830", label: "Créances sur entr. avec lien de participation" }, { account: "2831", label: "Effets à recevoir" }, { account: "2832", label: "Titres à revenu fixe" }, { account: "2837", label: "Créances douteuses" }, { account: "2838", label: "Plus-values actées" }, { account: "2839", label: "Réductions de valeur actées (-)" }, { account: "2840", label: "Autres actions et parts" }, { account: "2841", label: "Montants non appelés (-)" }, { account: "2848", label: "Plus-values actées" }, { account: "2849", label: "Réductions de valeur actées (-)" }, { account: "2850", label: "Autres créances" }, { account: "2851", label: "Effets à recevoir" }, { account: "2852", label: "Titres à revenu fixe" }, { account: "2857", label: "Créances douteuses" }, { account: "2859", label: "Réductions de valeur actées (-)" }, { account: "2880", label: "Cautionnements versés en numéraire" }, { account: "2900", label: "Créances commerciales" }, { account: "2901", label: "Effets à recevoir" }, { account: "2906", label: "Acomptes versés" }, { account: "2907", label: "Créances douteuses" }, { account: "2909", label: "Réductions de valeur actées (-)" }, { account: "2910", label: "Autres créances" }, { account: "2911", label: "Effets à recevoir" }, { account: "2917", label: "Créances douteuses" }, { account: "2919", label: "Réductions de valeur actées (-)" }, { account: "3000", label: "Valeur d'acquisition - matières premières" }, { account: "3090", label: "Réductions de valeur actées (-)" }, { account: "3100", label: "Valeur d'acquisition - fournitures" }, { account: "3190", label: "Réductions de valeur actées (-)" }, { account: "3200", label: "Valeur d'acquisition - En-cours de fabrication" }, { account: "3290", label: "Réductions de valeur actées (-)" }, { account: "3300", label: "Valeur d'acquisition - Produits finis" }, { account: "3390", label: "Réductions de valeur actées (-)" }, { account: "3400", label: "Valeur d'acquisition - Marchandises" }, { account: "3490", label: "Réductions de valeur actées (-)" }, { account: "3500", label: "Valeur d'acquisition - Imm. destinés à la vente" }, { account: "3590", label: "Réductions de valeur actées (-)" }, { account: "3600", label: "Acomptes versés" }, { account: "3690", label: "Réductions de valeur actées (-)" }, { account: "3700", label: "Valeur d'acquisition - Comm.en cours d'exécution" }, { account: "3710", label: "Bénéfice pris en compte" }, { account: "3790", label: "Réductions de valeur actées (-)" }, { account: "4000", label: "Clients" }, { account: "4010", label: "Effets à recevoir" }, { account: "4011", label: "Effets remis à l'encaissement" }, { account: "4012", label: "Effets remis à l'escompte" }, { account: "4040", label: "Produits à recevoir" }, { account: "4050", label: "Créances pour emballages à rendre" }, { account: "4051", label: "Fournisseurs débiteurs" }, { account: "4052", label: "Factures à étalir" }, { account: "4060", label: "Acomptes versés" }, { account: "4070", label: "Créances douteuses" }, { account: "4090", label: "Réductions de valeur actées (-)" }, { account: "4100", label: "Capital appelé, non versé (Appels de fonds)" }, { account: "4101", label: "Actionnaires défaillants" }, { account: "4110", label: "T.V.A. à récupérer sur achat" }, { account: "4111", label: "T.V.A. déductible intracommunautaire" }, { account: "4114", label: "T.V.A. à récupérer pour régularisation s/ NCV" }, { account: "4115", label: "T.V.A. déductible import + report" }, { account: "4117", label: "T.V.A. sur Acomptes versés" }, { account: "4119", label: "Compte Courant de l'administration T.V.A." }, { account: "4120", label: "Impôts belges sur le résultat" }, { account: "4125", label: "Autres impôts et taxes belges" }, { account: "4128", label: "Impôts et taxes étrangers" }, { account: "4140", label: "Produits à recevoir" }, { account: "4160", label: "Créances diverses" }, { account: "4170", label: "Créances douteuses" }, { account: "4180", label: "Cautionnements versés en numéraire" }, { account: "4190", label: "Réductions de valeur actées (-)" }, { account: "4200", label: "Emprunts subordonnés convertibles" }, { account: "4201", label: "Emprunts subordonnés non convertibles" }, { account: "4210", label: "Emprunts obligataires non subordonnés convertibles" }, { account: "4211", label: "Emprunts obligataires non subor. non convertibles" }, { account: "4220", label: "Dettes de location - financement et assimilées" }, { account: "4230", label: "Etablissement de crédit (Dette en compte)" }, { account: "4231", label: "Promesses" }, { account: "4232", label: "Crédits d'acceptation" }, { account: "4240", label: "Autres emprunts" }, { account: "4250", label: "Fournisseurs" }, { account: "4251", label: "Effets à payer" }, { account: "4260", label: "Acomptes reçus sur commandes" }, { account: "4280", label: "Cautionnements reçus en numéraire" }, { account: "4290", label: "Dettes diverses" }, { account: "4300", label: "Établis. de crédit - emprunts en cpte à terme fixe" }, { account: "4310", label: "Établissements de crédit - promesses" }, { account: "4320", label: "Établissements de crédit - crédits d'acceptation" }, { account: "4330", label: "Établissements de crédit - dettes en cpte courant" }, { account: "4340", label: "Warrants à payer" }, { account: "4390", label: "Autres emprunts" }, { account: "4400", label: "Fournisseurs" }, { account: "4410", label: "Effets à payer" }, { account: "4440", label: "Factures à recevoir" }, { account: "4450", label: "Dettes pour emballages consignés" }, { account: "4451", label: "Clients créditeurs" }, { account: "4452", label: "Notes de crédit à établir" }, { account: "4500", label: "Impôts belges sur le résultat" }, { account: "4505", label: "Autres impôts et taxes belges" }, { account: "4508", label: "Impôts et taxes étrangers" }, { account: "4510", label: "T.V.A. à payer s/ ventes & prestations de services" }, { account: "4511", label: "T.V.A. à payer intracommunautaire" }, { account: "4512", label: "T.V.A. à payer import + report" }, { account: "4513", label: "T.V.A. due (par le cocontractant) sur trav. immob." }, { account: "4514", label: "T.V.A. due pour régularisations s/ NCA" }, { account: "4519", label: "Compte courant de l'administration T.V.A." }, { account: "4520", label: "Impôts belges sur le résultat" }, { account: "4525", label: "Autres impôts et taxes belges" }, { account: "4528", label: "Impôts et taxes étrangers" }, { account: "4530", label: "Précompte professionnel retenu" }, { account: "4531", label: "Précompte mobilier retenu" }, { account: "4540", label: "O.N.S.S." }, { account: "4550", label: "Rémunérations" }, { account: "4560", label: "Pécule de vacances employés - provisions" }, { account: "4590", label: "Autres dettes sociales" }, { account: "4600", label: "Acomptes reçus sur commandes" }, { account: "4700", label: "Dividendes et tantièmes d'exercices antérieurs" }, { account: "4710", label: "Dividendes de l'exercice" }, { account: "4720", label: "Tantièmes de l'exercice" }, { account: "4730", label: "Autres allocataires" }, { account: "4740", label: "Actions à rembourser" }, { account: "4800", label: "Obligations et coupons échus" }, { account: "4810", label: "Versements anticipés sur capital non-appelé" }, { account: "4880", label: "Cautionnements reçus en numéraire" }, { account: "4890", label: "Autres dettes diverses" }, { account: "4900", label: "Charges à reporter" }, { account: "4910", label: "Produits acquis" }, { account: "4920", label: "Charges à imputer" }, { account: "4930", label: "Produits à reporter" }, { account: "4960", label: "Ecarts défavorables de conversion des devises" }, { account: "4970", label: "Ecarts favorables de conversion des devises" }, { account: "4990", label: "Comptes d'attente" }, { account: "5000", label: "Valeur d'acquisition - Actions propres" }, { account: "5100", label: "Valeur d'acquisition - Actions et parts" }, { account: "5110", label: "Montants non appelés (-)" }, { account: "5190", label: "Réductions de valeur actées (-)" }, { account: "5200", label: "Valeur d'acquisition - Titres à revenu fixe" }, { account: "5290", label: "Réductions de valeur actées (-)" }, { account: "5300", label: "Dépôts à terme - De plus d'un an" }, { account: "5310", label: "Dépôts à terme - De + d'un mois et à un an au plus" }, { account: "5320", label: "Dépôts à terme - D'un mois au plus" }, { account: "5390", label: "Réductions de valeur actées (-)" }, { account: "5400", label: "Valeurs échues à l'encaissement" }, { account: "5500", label: "Banques - compte courant" }, { account: "5501", label: "Banques - chèques émis" }, { account: "5509", label: "Banques - réductions de valeur actées (-)" }, { account: "5600", label: "Compte courant" }, { account: "5610", label: "Chèques émis (-)" }, { account: "5700", label: "Caisses - espèces - EUR" }, { account: "5780", label: "Caisses - timbres - EUR" }, { account: "5800", label: "Virements internes" }, { account: "6000", label: "Achats de matières premières" }, { account: "6010", label: "Achats de fournitures" }, { account: "6020", label: "Achats de services, travaux et études" }, { account: "6030", label: "Sous-traitances générales" }, { account: "6040", label: "Achats de marchandises" }, { account: "6050", label: "Achats d'immeubles destinés à la vente" }, { account: "6080", label: "Remises, ristournes et rabais obtenus (-)" }, { account: "6090", label: "Variation des stocks de matières premières" }, { account: "6091", label: "Variation des stocks de fournitures" }, { account: "6094", label: "Variation des stocks de marchandises" }, { account: "6095", label: "Var. des stocks d'imm. achetés destinés à la vente" }, { account: "6100", label: "Charges locatives terrains" }, { account: "6101", label: "Charges locatives constructions" }, { account: "6102", label: "Charges locatives machines, matériel, outillage" }, { account: "6103", label: "Charges locatives matériel roulant (voitures etc.)" }, { account: "6104", label: "Charges locatives matériel roulant (utilitaires)" }, { account: "6105", label: "Entretien et réparations - terrains" }, { account: "6106", label: "Entretien et réparations - constructions" }, { account: "6107", label: "Entretien et réparations - machines et outillage" }, { account: "6108", label: "Entretien et réparations - matériel roulant (voit)" }, { account: "6109", label: "Entretien et réparations - matériel roulant (util)" }, { account: "6110", label: "Fournitures de bureau et imprimés" }, { account: "6111", label: "Livres, prospectus et documentation" }, { account: "6112", label: "Petit matériel" }, { account: "6113", label: "Produits d'entretien" }, { account: "6114", label: "Produits de consommation non repris en 60" }, { account: "6115", label: "Consommation eau" }, { account: "6116", label: "Consommation gaz" }, { account: "6117", label: "Consommation électricité" }, { account: "6118", label: "Consommation mazout" }, { account: "6120", label: "Secrétariats sociaux" }, { account: "6121", label: "Prestations informatives" }, { account: "6122", label: "Services factors" }, { account: "6123", label: "Bureaux d'études" }, { account: "6124", label: "Organismes financiers" }, { account: "6125", label: "Contrôle technique (voitures, etc.)" }, { account: "6126", label: "Contrôle technique (utilitaires)" }, { account: "6127", label: "Redevances et royalties sur brevets" }, { account: "6128", label: "Redevances et royalties sur licences" }, { account: "6130", label: "Assurance incendie" }, { account: "6131", label: "Assurance vol" }, { account: "6132", label: "Assurance perte de bénéfice" }, { account: "6133", label: "Assurance tempête, grêle, intempéries" }, { account: "6134", label: "Assurance matériel roulant (voitures)" }, { account: "6135", label: "Assurance matériel roulant (utilitaires)" }, { account: "6136", label: "Assurance responsabilité risques civils" }, { account: "6137", label: "Assurance responsabilité risques professionnels" }, { account: "6138", label: "Assurance transport de marchandises" }, { account: "6139", label: "Assurance crédit" }, { account: "6140", label: "Transport sur vente (opération générale)" }, { account: "6141", label: "Transport maritime" }, { account: "6142", label: "Transport voie d'eau" }, { account: "6143", label: "Transport ferroviaire" }, { account: "6144", label: "Transport par route" }, { account: "6145", label: "Transport par air" }, { account: "6146", label: "Autres frais de transport" }, { account: "6147", label: "Transport à l'intérieur de l'entreprise" }, { account: "6148", label: "Prestation d'appareils de levage" }, { account: "6149", label: "Transport en dehors de l'entreprise" }, { account: "6150", label: "Commissions sur ventes" }, { account: "6151", label: "Commissions sur achats" }, { account: "6152", label: "Honoraires comptables" }, { account: "6153", label: "Honoraires architectes" }, { account: "6154", label: "Honoraires médecins" }, { account: "6155", label: "Honoraires vétérinaires" }, { account: "6156", label: "Honoraires experts" }, { account: "6157", label: "Honoraires avocats" }, { account: "6160", label: "Frais postaux" }, { account: "6161", label: "Frais de port" }, { account: "6162", label: "Téléphone, GSM" }, { account: "6163", label: "Télex, fax, Internet" }, { account: "6165", label: "Frais de déplacement (partie carburant)" }, { account: "6166", label: "Frais de déplacement (autres frais)" }, { account: "6167", label: "Frais de déplacement à l'étranger" }, { account: "6168", label: "Frais de réception limités" }, { account: "6169", label: "Frais de réception non limités" }, { account: "6170", label: "Personnes intérimaires" }, { account: "6171", label: "Personnes mises à disposition" }, { account: "6180", label: "Rémunérations, primes, pensions de retraite etc." }, { account: "6190", label: "Publicité et annonces" }, { account: "6191", label: "Affiches, imprimés, catalogues, échantillons etc." }, { account: "6192", label: "Participation aux foires, expositions, missions" }, { account: "6193", label: "Frais d'étalage de démonstration" }, { account: "6194", label: "Cadeaux et fleurs limités" }, { account: "6195", label: "Cadeaux et fleurs non limités" }, { account: "6196", label: "Cotisations" }, { account: "6197", label: "Dons et libéralités" }, { account: "6200", label: "Rémunérations des dirigeants d'entreprise" }, { account: "6201", label: "Personnel de direction - temps plein" }, { account: "6202", label: "Personnel de direction - temps partiel" }, { account: "6203", label: "Personnel employé - administratif à temps plein" }, { account: "6204", label: "Personnel employé - administratif à temps partiel" }, { account: "6205", label: "Personnel ouvrier à temps plein" }, { account: "6206", label: "Personnel ouvrier à temps partiel" }, { account: "6207", label: "Autres membres du personnel" }, { account: "6210", label: "Cotisations patronales d'assurances sociales" }, { account: "6220", label: "Primes patronales pour assurances extra-légales" }, { account: "6230", label: "Autres frais de personnel" }, { account: "6240", label: "Pensions de retraite et de survie admin. et gérant" }, { account: "6241", label: "Pensions de retraite et de survie personnel" }, { account: "6250", label: "Dotations" }, { account: "6251", label: "Utilisations et reprises (-)" }, { account: "6260", label: "Dotations" }, { account: "6261", label: "Utilisations et reprises (-)" }, { account: "6300", label: "Dot. aux amort. sur frais d'établissement" }, { account: "6301", label: "Dot. aux amort. sur immobilisations incorporelles" }, { account: "6302", label: "Dot. aux amort. sur immobilisations corporelles" }, { account: "6308", label: "Dot. aux réduc. de valeur sur immob. incorporelles" }, { account: "6309", label: "Dot. aux réduc. de valeur sur immob. corporelles" }, { account: "6310", label: "Dot. aux réductions de valeur sur stocks" }, { account: "6311", label: "Reprises de réductions de val. sur stocks (-)" }, { account: "6320", label: "Dot. aux réd. val. sur commandes en cours d'exéc." }, { account: "6321", label: "Reprises de réd. val. sur com. en cours d'exéc.(-)" }, { account: "6330", label: "Dot. aux réd. val. sur créanc. com. à plus d'un an" }, { account: "6331", label: "Reprises de réd. val. sur cr. com. à + d'un an (-)" }, { account: "6340", label: "Dot. aux réd. val. sur créances à moins d'un an" }, { account: "6341", label: "Reprises de réd. val. sur cr. com. < un an (-)" }, { account: "6350", label: "Dotations aux provisions pour pensions" }, { account: "6351", label: "Utilisations et rep. des prov. pour pensions (-)" }, { account: "6360", label: "Dot. aux prov. pour grosses réparat. & entretiens" }, { account: "6361", label: "Util.&rep.des prov.pour grosses répar.& entret.(-)" }, { account: "6370", label: "Dot. aux provisions pour autres risques et charges" }, { account: "6371", label: "Util.&rep.des prov. pr autres risques et charg (-)" }, { account: "6400", label: "Charges fiscales d'exploitation" }, { account: "6405", label: "Droits d'enregistrement et publication légale" }, { account: "6410", label: "Moins-values sur réal. courantes d'immob. corp." }, { account: "6420", label: "Moins-values sur réal. de créances commerciales" }, { account: "6430", label: "Charges d'exploitation diverses" }, { account: "6490", label: "Charg.d'expl.portée à l'actif (fr.restructur.) (-)" }, { account: "6500", label: "Intérêts, commissions - frais afférents aux dettes" }, { account: "6501", label: "Amort.des frais d'émis.d'emprunts & primes de remb" }, { account: "6502", label: "Autres charges des dettes" }, { account: "6503", label: "Intérêts intercalaires portés à l'actif (-)" }, { account: "6510", label: "Dotations aux réd. val. sur actifs circulants" }, { account: "6511", label: "Reprises de réd. de val. sur actifs circulants (-)" }, { account: "6520", label: "Moins-values sur réalisation d'actifs circulants" }, { account: "6530", label: "Charges d'escompte de créances" }, { account: "6540", label: "Différences de change" }, { account: "6550", label: "Écarts de conversion des devises" }, { account: "6560", label: "Dotations aux provisions à caractère financier" }, { account: "6561", label: "Utilisations et repr. de prov. à caract. fin. (-)" }, { account: "6570", label: "Frais d'acquisition et de vente de titres" }, { account: "6580", label: "Frais de banque et de règlement" }, { account: "6590", label: "Charges financières diverses" }, { account: "6600", label: "Dot. aux amort. except. s/ frais d'établissement" }, { account: "6601", label: "Dot. aux amort. except. s/ immo. Incorp." }, { account: "6602", label: "Dot. aux amort. except. s/ immo. Corp." }, { account: "6610", label: "Dot. aux réd. val. sur immo. financières" }, { account: "6620", label: "Dot. aux prov. pour risques et charges exception." }, { account: "6621", label: "Util. de prov. pour risques et charges except. (-)" }, { account: "6630", label: "Moins-values sur réalisation d'actifs immobilisés" }, { account: "6640", label: "Autres charges exceptionnelles" }, { account: "6690", label: "Charges excep. portées à l'actif (fr.restruc) (-)" }, { account: "6700", label: "Impôts ou précomptes dus ou versés" }, { account: "6701", label: "Exc.de vers.d'imp. & de préc.portés à l'actif (-)" }, { account: "6702", label: "Charges fiscales estimées" }, { account: "6710", label: "Suppléments d'impôts dus ou versés" }, { account: "6711", label: "Suppléments d'impôts estimés" }, { account: "6712", label: "Provisions fiscales constituées" }, { account: "6713", label: "Impôts contestés (-)" }, { account: "6720", label: "Impôts étrangers sur le résultat de l'exercice" }, { account: "6730", label: "Impôts étrangers sur le résultat d'ex. antérieurs" }, { account: "6800", label: "Transferts aux impôts différés" }, { account: "6890", label: "Transferts aux réserves immunisées" }, { account: "6900", label: "Perte reportée de l'exercice précédent" }, { account: "6910", label: "Affectations au capital et à la prime d'émission" }, { account: "6920", label: "Dotation à la réserve légale" }, { account: "6921", label: "Dotation aux autres réserves" }, { account: "6930", label: "Bénéfice à reporter" }, { account: "6940", label: "Rémunération du capital" }, { account: "6950", label: "Administrateurs ou gérants" }, { account: "6960", label: "Autres allocataires" }, { account: "6970", label: "Actions à rembourser" }, { account: "7000", label: "Ventes de marchandises" }, { account: "7010", label: "Ventes de produits finis" }, { account: "7020", label: "Ventes d'immeubles acquis en vue de leur revente" }, { account: "7030", label: "Ventes sur commandes" }, { account: "7040", label: "Ventes d'emballages récupérables" }, { account: "7070", label: "Prestations de services" }, { account: "7080", label: "Remises, ristournes et rabais accordés (-)" }, { account: "7120", label: "Des en-cours de fabrication" }, { account: "7130", label: "Des produits finis" }, { account: "7150", label: "Des immeubles construits destinés à la vente" }, { account: "7170", label: "Des commandes en cours d'exécution" }, { account: "7171", label: "Bénéfice pris en compte des comm.en cours d'ex." }, { account: "7200", label: "Production immobilisée" }, { account: "7400", label: "Subsides d'exploitation et montants compensatoires" }, { account: "7410", label: "Plus-values sur réal. courantes d'immo. corporel." }, { account: "7420", label: "Plus-values sur réal. de créances commerciales" }, { account: "7430", label: "Commissions et courtages" }, { account: "7440", label: "Prestations de services" }, { account: "7450", label: "Redevances pour brevets et licences" }, { account: "7460", label: "Revenus des immeubles" }, { account: "7470", label: "Revenus d'autres locations" }, { account: "7480", label: "Récupérations de frais auprès de tiers" }, { account: "7490", label: "Produits d'exploitation divers" }, { account: "7500", label: "Produits des immobilisations financières" }, { account: "7510", label: "Produits des actifs circulants" }, { account: "7520", label: "Plus-values sur réalisation d'actifs circulants" }, { account: "7530", label: "Subsides en capital et en intérêts" }, { account: "7540", label: "Différences de change" }, { account: "7550", label: "Écarts de conversion des devises" }, { account: "7560", label: "Escomptes obtenus des fournisseurs" }, { account: "7570", label: "Écarts de paiement" }, { account: "7580", label: "Récupérations de frais auprès de tiers" }, { account: "7590", label: "Produits financiers divers" }, { account: "7600", label: "Rep.d'amort. & de réd.val. sur immo. incorporelles" }, { account: "7601", label: "Rep.d'amort. & de réd.val. sur immo. corporelles" }, { account: "7610", label: "Reprises de réd. de valeur sur immo. financières" }, { account: "7620", label: "Reprises de prov. pour risques et charges except." }, { account: "7630", label: "Plus-values sur réalisation d'actifs immobilisés" }, { account: "7640", label: "Autres produits exceptionnels" }, { account: "7710", label: "Régularisation d'impôts dus ou versés" }, { account: "7711", label: "Régularisation d'impôts estimés" }, { account: "7712", label: "Reprises de provisions fiscales" }, { account: "7730", label: "Impôts étrangers sur le résultat" }, { account: "7800", label: "Prélèvements sur les impôts différés" }, { account: "7890", label: "Prélèvements sur réserves immunisées" }, { account: "7900", label: "Bénéfice reporté de l'exercice précédent" }, { account: "7910", label: "Prélèvement sur le capital & les primes d'émission" }, { account: "7920", label: "Prélèvement sur les réserves" }, { account: "7930", label: "Perte à reporter" }, { account: "7940", label: "Intervention d'associés dans la perte" }
         ];
 
         const DECLARATION_TVA = {
-            cadreII: [{ code: "01", label: "6%" }, { code: "02", label: "12%" }, { code: "03", label: "21%" }, { code: "45", label: "COCONTRACTANT" }, { code: "46", label: "INTRACOMMUNAUTAIRE" }, { code: "47", label: "EXPORTATION" }, { code: "48", label: "NC s/Ventes IC" }, { code: "49", label: "NC s/Autres" }],
-            cadreIII: [{ code: "81", label: "Marchandises, matières premières" }, { code: "82", label: "SBD" }, { code: "83", label: "Investissements" }, { code: "84", label: "NC s/IC" }, { code: "85", label: "NC autres" }, { code: "86", label: "Achats IC" }, { code: "87", label: "Achats Cocontractant" }],
-            cadreIV: [{ code: "54", label: "TVA s/ventes" }, { code: "55", label: "TVA IC" }, { code: "56", label: "TVA Cocontractant" }, { code: "57", label: "TVA Import" }, { code: "63", label: "NC s/achats" }, { code: "xx", label: "TOTAL" }],
-            cadreV: [{ code: "59", label: "TVA déductible (s/achats)" }, { code: "64", label: "TVA s/NC s/ventes" }, { code: "YY", label: "TOTAL" }],
-            cadreVI: [{ code: "71", label: "TVA due à l'état (à payer)" }, { code: "72", label: "TVA due par l'état (à récupérer)" }]
+          cadreII: [
+            { code: "01", label: "6%" },
+            { code: "02", label: "12%" },
+            { code: "03", label: "21%" },
+            { code: "45", label: "COCONTRACTANT" },
+            { code: "46", label: "INTRACOMMUNAUTAIRE" },
+            { code: "47", label: "EXPORTATION" },
+            { code: "48", label: "NC s/Ventes IC" },
+            { code: "49", label: "NC s/Autres" }
+          ],
+          cadreIII: [
+            { code: "81", label: "Marchandises, matières premières" },
+            { code: "82", label: "SBD" },
+            { code: "83", label: "Investissements" },
+            { code: "84", label: "NC s/IC" },
+            { code: "85", label: "NC autres" },
+            { code: "86", label: "Achats IC" },
+            { code: "87", label: "Achats Cocontractant (+ PS intracommunautaire)" }
+          ],
+          cadreIV: [
+            { code: "54", label: "TVA s/ventes" },
+            { code: "55", label: "TVA IC" },
+            { code: "56", label: "TVA Cocontractant" },
+            { code: "57", label: "TVA Import" },
+            { code: "63", label: "NC s/achats" },
+            { code: "xx", label: "TOTAL" }
+          ],
+          cadreV: [
+            { code: "59", label: "TVA déductible (s/achats)" },
+            { code: "64", label: "TVA s/NC s/ventes" },
+            { code: "YY", label: "TOTAL" }
+          ],
+          cadreVI: [
+            { code: "71", label: "TVA due à l'état (à payer)" },
+            { code: "72", label: "TVA due par l'état (à récupérer)" }
+          ]
         };
 
         const CODES_POPSY = {
-            achats: [
-                { code: "21M", tva: "21%", label: "Marchandises - 60" },
-                { code: "21S", tva: "21%", label: "Services - 61" },
-                { code: "21V", tva: "21%", label: "Investissements - 2" },
-                { code: "21CS", tva: "21%", label: "Services Cocontractant" },
-                { code: "21IM", tva: "21%", label: "Marchandises Intracommunautaires" },
-                { code: "21XM", tva: "21%", label: "Marchandises Importations" },
-                { code: "21ND", tva: "21%", label: "TVA SUR FRAIS DE VOITURE (50% RECUP)" },
-                { code: "EX", tva: "", label: "Exonéré (Loyers, Assurances...)" }
-            ],
-            ventes: [
-                { code: "21", tva: "21%", label: "TVA 21%" },
-                { code: "6", tva: "6%", label: "TVA 6%" },
-                { code: "0", tva: "0%", label: "TVA 0%" },
-                { code: "C0", tva: "0%", label: "TVA 0% Cocontractant" },
-                { code: "I0", tva: "0%", label: "TVA 0% Intracommunautaire" },
-                { code: "X0", tva: "0%", label: "TVA 0% Exportations" }
-            ],
-            divers: [{ code: "21ND", label: "TVA Non Déductible (Voitures)" }, { code: "EX", label: "Exonéré" }]
+          achats: [
+            { code: "6CM", tva: "6%", label: "Marchandises Cocontractant" },
+            { code: "6CS", tva: "6%", label: "Services Cocontractant" },
+            { code: "6CV", tva: "6%", label: "Investissements Cocontractant" },
+            { code: "6IM", tva: "6%", label: "Marchandises Intracommunautaires" },
+            { code: "6IS", tva: "6%", label: "Services Intracommunautaires" },
+            { code: "6IV", tva: "6%", label: "Investissements Intracommunautaires" },
+            { code: "6M", tva: "6%", label: "Marchandises" },
+            { code: "6S", tva: "6%", label: "Services" },
+            { code: "6V", tva: "6%", label: "Investissements" },
+            { code: "6XM", tva: "6%", label: "Marchandises Importations" },
+            { code: "6XS", tva: "6%", label: "Services Importations" },
+            { code: "6XV", tva: "6%", label: "Investissements Importations" },
+            { code: "21CM", tva: "21%", label: "Marchandises Cocontractant" },
+            { code: "21CS", tva: "21%", label: "Services Cocontractant" },
+            { code: "21CV", tva: "21%", label: "Investissements Cocontractant" },
+            { code: "21IM", tva: "21%", label: "Marchandises Intracommunautaires" },
+            { code: "21IS", tva: "21%", label: "Services Intracommunautaires" },
+            { code: "21IV", tva: "21%", label: "Investissements Intracommunautaires" },
+            { code: "21M", tva: "21%", label: "Marchandises - 60" },
+            { code: "21S", tva: "21%", label: "Services - 61" },
+            { code: "21V", tva: "21%", label: "Investissements - 2" },
+            { code: "21XM", tva: "21%", label: "Marchandises Importations" },
+            { code: "21XS", tva: "21%", label: "Services Importations" },
+            { code: "21XV", tva: "21%", label: "Investissements Importations" }
+          ],
+          ventes: [
+            { code: "0", tva: "0%", label: "TVA 0%" },
+            { code: "6", tva: "6%", label: "TVA 6%" },
+            { code: "12", tva: "12%", label: "TVA 12%" },
+            { code: "21", tva: "21%", label: "TVA 21%" },
+            { code: "C0", tva: "0%", label: "TVA 0% Cocontractant" },
+            { code: "EX", tva: "", label: "Exonéré" },
+            { code: "I0", tva: "0%", label: "TVA 0% Intracommunautaire" },
+            { code: "X0", tva: "0%", label: "TVA 0% Exportations" }
+          ],
+          divers: [
+            { code: "21ND", label: "TVA SUR FRAIS DE VOITURE (50% TVA RECUP) = sbd (case 82 décl tva)" },
+            { code: "EX", label: "Pour les loyers, timbres, taxes, assurances et emballages consignés" }
+          ]
         };
 
-        // --- NIVEAUX (Exercices) ---
         const LEVELS = [
           // Niveau 1
           {
@@ -206,6 +250,78 @@
                 { type: 'FINANCIER', defaultDate: "25/06/N", solution: [{ accountNumber: '5500', debit: '1210' }, { accountNumber: '4000', credit: '1210' }] }
             ]
           },
+          // Niveau 6 (Ex 2)
+          {
+            id: 6,
+            title: "Ex 2 - Prestation Service",
+            description: "Prestation de service avec RRR.",
+            documents: [{ type: 'INVOICE', title: "Fac 51", content: { sender: { name: "OUTISUD" }, receiver: { name: "AVI" }, lines: [{ desc: "Prestation", total: "1500" }, { desc: "RRR", total: "-150" }], totals: { toPay: "1633,50" } } }],
+            requiredJournals: [{ type: 'VENTE', defaultDate: "20/06/n", solution: [{ accountNumber: '7070', credit: '1350' }, { accountNumber: '4510', credit: '283,50' }, { accountNumber: '4000', debit: '1633,50' }] }]
+          },
+          // Niveau 7 (Ex 3)
+          {
+            id: 7,
+            title: "Ex 3 - Achat Intra-comm",
+            description: "Acquisition intra-communautaire.",
+            documents: [{ type: 'INVOICE', title: "Fac 1569", content: { sender: { name: "LATOURE (FR)" }, receiver: { name: "OUTISUD" }, lines: [{ desc: "Produit B", total: "4000" }, { desc: "RRR", total: "-400" }], totals: { toPay: "3600" } } }],
+            requiredJournals: [{ type: 'ACHAT', defaultDate: "15/06/n", solution: [{ accountNumber: '6040', debit: '3600' }, { accountNumber: '4110', debit: '756' }, { accountNumber: '4511', credit: '756' }, { accountNumber: '4400', credit: '3600' }] }]
+          },
+          // Niveau 8 (Ex 4)
+          {
+            id: 8,
+            title: "Ex 4 - Vente Intra-comm",
+            description: "Livraison intra-communautaire.",
+            documents: [{ type: 'INVOICE', title: "Fac 55", content: { sender: { name: "OUTISUD" }, receiver: { name: "LATOURE (FR)" }, lines: [{ desc: "Produit B", total: "3600" }], totals: { toPay: "3600" } } }],
+            requiredJournals: [{ type: 'VENTE', defaultDate: "15/06/n", solution: [{ accountNumber: '7000', credit: '3600' }, { accountNumber: '4000', debit: '3600' }] }]
+          },
+          // Niveau 9 (Ex 5)
+          {
+            id: 9,
+            title: "Ex 5 - Importation",
+            description: "Achat hors UE (Suisse).",
+            documents: [{ type: 'INVOICE', title: "Fac 15", content: { sender: { name: "BEI (Suisse)" }, receiver: { name: "OUTISUD" }, lines: [{ desc: "Produit B", total: "15000" }], totals: { toPay: "15000" } } }],
+            requiredJournals: [{ type: 'ACHAT', defaultDate: "25/06/n", solution: [{ accountNumber: '6040', debit: '15000' }, { accountNumber: '4110', debit: '3150' }, { accountNumber: '4512', credit: '3150' }, { accountNumber: '4400', credit: '15000' }] }]
+          },
+          // Niveau 10 (Ex 6)
+          {
+            id: 10,
+            title: "Ex 6 - Exportation",
+            description: "Vente hors UE (Suisse).",
+            documents: [{ type: 'INVOICE', title: "Fac 60", content: { sender: { name: "OUTISUD" }, receiver: { name: "BEI (Suisse)" }, lines: [{ desc: "Produit B", total: "15000" }], totals: { toPay: "15000" } } }],
+            requiredJournals: [{ type: 'VENTE', defaultDate: "25/06/n", solution: [{ accountNumber: '7000', credit: '15000' }, { accountNumber: '4000', debit: '15000' }] }]
+          },
+          // Niveau 11 (Ex 7)
+          {
+            id: 11,
+            title: "Ex 7 - Achat Cocontractant",
+            description: "Travaux immobiliers (Nettoyage).",
+            documents: [{ type: 'INVOICE', title: "Fac 789", content: { sender: { name: "Cleanup" }, receiver: { name: "OUTISUD" }, lines: [{ desc: "Nettoyage", total: "750" }], totals: { toPay: "750" } } }],
+            requiredJournals: [{ type: 'ACHAT', defaultDate: "11/06/n", solution: [{ accountNumber: '6106', debit: '750' }, { accountNumber: '4110', debit: '157,50' }, { accountNumber: '4513', credit: '157,50' }, { accountNumber: '4400', credit: '750' }] }]
+          },
+          // Niveau 12 (Ex 8)
+          {
+            id: 12,
+            title: "Ex 8 - Vente Cocontractant",
+            description: "Travaux immobiliers fournis.",
+            documents: [{ type: 'INVOICE', title: "Fac 62", content: { sender: { name: "OUTISUD" }, receiver: { name: "AVI" }, lines: [{ desc: "Nettoyage", total: "750" }], totals: { toPay: "750" } } }],
+            requiredJournals: [{ type: 'VENTE', defaultDate: "11/06/n", solution: [{ accountNumber: '7070', credit: '750' }, { accountNumber: '4000', debit: '750' }] }]
+          },
+          // Niveau 13 (Ex 9)
+          {
+            id: 13,
+            title: "Ex 9 - NC Achat",
+            description: "Retour de marchandises.",
+            documents: [{ type: 'INVOICE', title: "NC 3", content: { sender: { name: "COTUBEX" }, receiver: { name: "OUTISUD" }, lines: [{ desc: "Retour", total: "6000" }], totals: { toPay: "7260" } } }],
+            requiredJournals: [{ type: 'ACHAT', defaultDate: "20/06/n", solution: [{ accountNumber: '6040', credit: '6000' }, { accountNumber: '4514', credit: '1260' }, { accountNumber: '4400', debit: '7260' }] }]
+          },
+          // Niveau 14 (Ex 10)
+          {
+            id: 14,
+            title: "Ex 10 - NC Vente",
+            description: "Retour de marchandises client.",
+            documents: [{ type: 'INVOICE', title: "NC 20", content: { sender: { name: "OUTISUD" }, receiver: { name: "AVI" }, lines: [{ desc: "Retour", total: "6000" }], totals: { toPay: "7260" } } }],
+            requiredJournals: [{ type: 'VENTE', defaultDate: "26/06/n", solution: [{ accountNumber: '7000', debit: '6000' }, { accountNumber: '4114', debit: '1260' }, { accountNumber: '4000', credit: '7260' }] }]
+          },
           // Niveau 29 (Ex 25 - Complexe)
           {
             id: 29,
@@ -221,12 +337,56 @@
                 { type: 'VENTE', defaultDate: "31/08/N", solution: [{ accountNumber: '4600', debit: '1000' }, { accountNumber: '4000', debit: '10890' }, { accountNumber: '7000', credit: '10000' }, { accountNumber: '4510', credit: '1890' }] }
             ]
           }
-          // Pour alléger le code, j'ai mis les principaux. La logique est identique pour les 28 niveaux.
         ];
 
         // --- 3. COMPOSANTS ---
 
         const EmptyRow = (id) => ({ id, accountNumber: '', declTva: '', codePopsy: '', label: '', debit: '', credit: '' });
+
+        const Modal = ({ title, onClose, children }) => (
+            <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+                <div className="bg-white w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl shadow-2xl">
+                    <div className="flex justify-between p-4 border-b">
+                        <h2 className="font-bold text-lg">{title}</h2>
+                        <button onClick={onClose}><X /></button>
+                    </div>
+                    <div className="overflow-auto p-6">{children}</div>
+                </div>
+            </div>
+        );
+
+        const PlanComptableModal = ({ onClose }) => {
+            const [search, setSearch] = useState('');
+            const filtered = PLAN_COMPTABLE.filter(i => i.account.includes(search) || i.label.toLowerCase().includes(search.toLowerCase()));
+            return (
+                <Modal title="Plan Comptable" onClose={onClose}>
+                    <input autoFocus placeholder="Rechercher..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full border p-2 mb-4 rounded" />
+                    <div className="grid grid-cols-2 gap-2 text-sm">{filtered.map(c => <div key={c.account} className="border-b p-1 flex gap-2"><span className="font-bold w-12">{c.account}</span><span>{c.label}</span></div>)}</div>
+                </Modal>
+            );
+        };
+
+        const DeclarationTvaModal = ({ onClose }) => (
+            <Modal title="Déclaration TVA" onClose={onClose}>
+                <div className="grid md:grid-cols-2 gap-4">
+                    {Object.entries(DECLARATION_TVA).map(([cadre, items]) => (
+                        <div key={cadre} className="border rounded">
+                            <div className="bg-gray-100 font-bold p-2 uppercase">{cadre}</div>
+                            {items.map(i => <div key={i.code} className="flex border-t"><span className="w-12 bg-gray-50 border-r p-2 font-bold text-center">{i.code}</span><span className="p-2">{i.label}</span></div>)}
+                        </div>
+                    ))}
+                </div>
+            </Modal>
+        );
+
+        const CodesPopsyModal = ({ onClose }) => (
+            <Modal title="Codes Popsy" onClose={onClose}>
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div><h3 className="font-bold bg-yellow-200 p-2 mb-2">Achats</h3>{CODES_POPSY.achats.map(c => <div key={c.code} className="flex text-sm border-b"><span className="w-16 font-bold bg-yellow-100 p-1">{c.code}</span><span className="p-1">{c.label}</span></div>)}</div>
+                    <div><h3 className="font-bold bg-orange-200 p-2 mb-2">Ventes</h3>{CODES_POPSY.ventes.map(c => <div key={c.code} className="flex text-sm border-b"><span className="w-16 font-bold bg-orange-100 p-1">{c.code}</span><span className="p-1">{c.label}</span></div>)}</div>
+                </div>
+            </Modal>
+        );
 
         const JournalTable = ({ type, defaultDate, rows, setRows, showSolution, solutionRows }) => {
             const [journalDate, setJournalDate] = useState(defaultDate);
@@ -335,17 +495,64 @@
             return <div className="bg-yellow-100 p-4 text-center italic text-yellow-900 mb-4 rounded">{doc.content.text}</div>;
         };
 
-        const Modal = ({ title, onClose, children }) => (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div className="bg-white w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl shadow-2xl">
-                    <div className="flex justify-between p-4 border-b">
-                        <h2 className="font-bold text-lg">{title}</h2>
-                        <button onClick={onClose}><X /></button>
-                    </div>
-                    <div className="overflow-auto p-6">{children}</div>
+        const PrintView = ({ userEmail, allUserAnswers }) => {
+          return (
+            <div className="hidden print:block p-8 bg-white text-black print-color-adjust-exact">
+              <div className="mb-8 border-b-2 border-black pb-4">
+                <h1 className="text-3xl font-bold">Rapport d'exercices comptables POPSY</h1>
+                <p className="text-lg mt-2">Élève : {userEmail}</p>
+                <p className="text-sm text-gray-500">Institut Saint-Luc Frameries - {new Date().toLocaleDateString()}</p>
+              </div>
+
+              {LEVELS.map((level) => (
+                <div key={level.id} className="mb-8 break-inside-avoid page-break-after-auto border-b border-gray-200 pb-8">
+                  <h2 className="text-xl font-bold bg-gray-100 p-2 mb-4 border-l-4 border-slate-800">
+                    Niveau {level.id} : {level.title}
+                  </h2>
+                  <div className="space-y-6">
+                    {level.requiredJournals.map((journalTemplate, idx) => {
+                      const userRows = allUserAnswers[level.id]?.[idx] || [];
+                      return (
+                        <div key={idx} className="border border-gray-300 rounded p-4 break-inside-avoid">
+                          <h3 className="font-bold text-lg mb-2">{journalTemplate.type} - {journalTemplate.defaultDate}</h3>
+                          <div className="mb-4">
+                            <h4 className="text-sm font-bold text-blue-800 mb-1">Votre réponse :</h4>
+                            {userRows.length > 0 ? (
+                              <table className="w-full text-xs border-collapse border border-gray-400 mb-2">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="border border-gray-400 p-1 w-20">Compte</th>
+                                    <th className="border border-gray-400 p-1 w-16">TVA</th>
+                                    <th className="border border-gray-400 p-1 w-20">Popsy</th>
+                                    <th className="border border-gray-400 p-1">Libellé</th>
+                                    <th className="border border-gray-400 p-1 text-right w-24">Débit</th>
+                                    <th className="border border-gray-400 p-1 text-right w-24">Crédit</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {userRows.map((r, rIdx) => (
+                                    <tr key={rIdx}>
+                                      <td className="border border-gray-400 p-1 font-mono">{r.accountNumber}</td>
+                                      <td className="border border-gray-400 p-1 text-center">{r.declTva}</td>
+                                      <td className="border border-gray-400 p-1 text-center">{r.codePopsy}</td>
+                                      <td className="border border-gray-400 p-1">{r.label}</td>
+                                      <td className="border border-gray-400 p-1 text-right bg-yellow-50">{r.debit}</td>
+                                      <td className="border border-gray-400 p-1 text-right bg-blue-50">{r.credit}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            ) : <p className="text-xs italic text-gray-500">Aucune donnée.</p>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
+              ))}
             </div>
-        );
+          );
+        };
 
         // --- 4. APP PRINCIPALE ---
 
@@ -355,7 +562,8 @@
             const [levelIdx, setLevelIdx] = useState(0);
             const [allAnswers, setAllAnswers] = useState({});
             const [showSolution, setShowSolution] = useState(false);
-            const [activeModal, setActiveModal] = useState(null); // 'PLAN', 'TVA', 'CODES'
+            const [activeModal, setActiveModal] = useState(null); 
+            const [isCompleted, setIsCompleted] = useState(false);
 
             const currentLevel = LEVELS[levelIdx];
 
@@ -388,20 +596,35 @@
                 );
             }
 
+            if (isCompleted) {
+                return (
+                    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 print:hidden">
+                        <div className="bg-white p-10 rounded-2xl shadow-xl text-center max-w-2xl w-full">
+                            <div className="inline-flex items-center justify-center w-24 h-24 bg-yellow-100 rounded-full text-yellow-500 mb-6"><Trophy size={48} /></div>
+                            <h1 className="text-4xl font-bold text-slate-800 mb-2">Félicitations !</h1>
+                            <p className="text-slate-600 text-lg mb-8">Vous avez terminé tous les exercices, <span className="font-bold text-slate-800">{userEmail.split('@')[0]}</span>.</p>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-all font-semibold shadow-lg"><Printer size={20} /> Imprimer le rapport complet</button>
+                                <button onClick={() => {setIsCompleted(false); setLevelIdx(0); setAllAnswers({}); setShowSolution(false);}} className="flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-all font-semibold"><RotateCcw size={20} /> Recommencer</button>
+                            </div>
+                        </div>
+                        <PrintView userEmail={userEmail} allUserAnswers={allAnswers} />
+                    </div>
+                );
+            }
+
             return (
                 <div className="min-h-screen flex flex-col pb-20 print:pb-0">
-                    {/* Header */}
                     <div className="bg-slate-900 text-white p-4 sticky top-0 z-40 print:hidden shadow-lg">
                         <div className="container mx-auto flex justify-between items-center">
                             <div className="font-bold flex items-center gap-2"><BookOpen size={20} className="text-yellow-500"/> Niveau {currentLevel.id} / {LEVELS.length}</div>
                             <div className="flex gap-2">
                                 <button disabled={levelIdx===0} onClick={() => {setLevelIdx(l => l-1); setShowSolution(false); window.scrollTo(0,0)}} className="p-2 bg-slate-800 rounded disabled:opacity-50"><ChevronLeft/></button>
-                                <button disabled={levelIdx===LEVELS.length-1} onClick={() => {setLevelIdx(l => l+1); setShowSolution(false); window.scrollTo(0,0)}} className="p-2 bg-yellow-500 text-black rounded font-bold"><ChevronRight/></button>
+                                <button onClick={() => { if(levelIdx < LEVELS.length -1) {setLevelIdx(l => l+1); setShowSolution(false); window.scrollTo(0,0)} else {setIsCompleted(true);} }} className="p-2 bg-yellow-500 text-black rounded font-bold"><ChevronRight/></button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Main Content */}
                     <div className="container mx-auto p-4 flex flex-col lg:flex-row gap-8 print:block">
                         <div className="lg:w-1/2 print:w-full print:mb-8">
                             <h2 className="text-2xl font-bold mb-2">{currentLevel.title}</h2>
@@ -423,7 +646,6 @@
                         </div>
                     </div>
 
-                    {/* Footer Tools */}
                     <div className="fixed bottom-0 w-full bg-white border-t p-3 print:hidden z-50">
                         <div className="container mx-auto flex justify-between items-center">
                             <div className="flex gap-2">
@@ -435,40 +657,11 @@
                         </div>
                     </div>
 
-                    {/* Modals */}
-                    {activeModal === 'PLAN' && (
-                        <Modal title="Plan Comptable" onClose={() => setActiveModal(null)}>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                {PLAN_COMPTABLE.map(c => <div key={c.account} className="border-b p-1 flex gap-2"><span className="font-bold w-12">{c.account}</span><span>{c.label}</span></div>)}
-                            </div>
-                        </Modal>
-                    )}
-                    {activeModal === 'TVA' && (
-                        <Modal title="Déclaration TVA" onClose={() => setActiveModal(null)}>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {Object.entries(DECLARATION_TVA).map(([cadre, items]) => (
-                                    <div key={cadre} className="border rounded">
-                                        <div className="bg-gray-100 font-bold p-2 uppercase">{cadre}</div>
-                                        {items.map(i => <div key={i.code} className="flex border-t"><span className="w-12 bg-gray-50 border-r p-2 font-bold text-center">{i.code}</span><span className="p-2">{i.label}</span></div>)}
-                                    </div>
-                                ))}
-                            </div>
-                        </Modal>
-                    )}
-                    {activeModal === 'CODES' && (
-                        <Modal title="Codes Popsy" onClose={() => setActiveModal(null)}>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <h3 className="font-bold bg-yellow-200 p-2 mb-2">Achats</h3>
-                                    {CODES_POPSY.achats.map(c => <div key={c.code} className="flex text-sm border-b"><span className="w-16 font-bold bg-yellow-100 p-1">{c.code}</span><span className="p-1">{c.label}</span></div>)}
-                                </div>
-                                <div>
-                                    <h3 className="font-bold bg-orange-200 p-2 mb-2">Ventes</h3>
-                                    {CODES_POPSY.ventes.map(c => <div key={c.code} className="flex text-sm border-b"><span className="w-16 font-bold bg-orange-100 p-1">{c.code}</span><span className="p-1">{c.label}</span></div>)}
-                                </div>
-                            </div>
-                        </Modal>
-                    )}
+                    {activeModal === 'PLAN' && <PlanComptableModal onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'TVA' && <DeclarationTvaModal onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'CODES' && <CodesPopsyModal onClose={() => setActiveModal(null)} />}
+                    
+                    <PrintView userEmail={userEmail} allUserAnswers={allAnswers} />
                 </div>
             );
         };
