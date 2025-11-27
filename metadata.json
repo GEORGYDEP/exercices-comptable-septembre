@@ -1,0 +1,5 @@
+{
+  "name": "Jeu Comptable POPSY",
+  "description": "Un jeu éducatif pour apprendre à comptabiliser les factures (Achats, Caisse, OD, Financier) comme dans le logiciel POPSY.",
+  "requestFramePermissions": []
+}
