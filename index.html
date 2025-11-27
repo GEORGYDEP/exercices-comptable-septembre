@@ -42,8 +42,11 @@
           print-color-adjust: exact;
         }
         /* Cache les éléments inutiles à l'impression */
-        .no-print {
+        .no-print, .print\:hidden {
           display: none !important;
+        }
+        .print\:block {
+          display: block !important;
         }
       }
       
@@ -56,10 +59,10 @@
 <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0"
   }
 }
 </script>
@@ -79,7 +82,7 @@
             FileText, List, Grid, Search, X, Plus, Trash2, CheckCircle, HelpCircle 
         } = LucideReact;
 
-        // --- 2. TYPES & ENUMS (Adaptés pour JS) ---
+        // --- 2. DONNÉES ET CONSTANTES ---
         
         const JournalType = {
             ACHAT: 'ACHAT',
@@ -88,8 +91,6 @@
             FINANCIER: 'FINANCIER',
             OD: 'OD'
         };
-
-        // --- 3. CONSTANTES & DONNÉES (CONSTANTS.TS) ---
 
         const PLAN_COMPTABLE = [
             { account: "1000", label: "Capital souscrit" },
@@ -475,7 +476,7 @@
             { account: "6410", label: "Moins-values sur réal. courantes d'immob. corp." },
             { account: "6420", label: "Moins-values sur réal. de créances commerciales" },
             { account: "6430", label: "Charges d'exploitation diverses" },
-            { account: "6490", label: "Charg.d'expl.portée à l'actif (fr.restructur.) (-)" },
+            { account: "6490", label: "Charg.d'expl.portée à l'actif (fr.restructur.) (-) " },
             { account: "6500", label: "Intérêts, commissions - frais afférents aux dettes" },
             { account: "6501", label: "Amort.des frais d'émis.d'emprunts & primes de remb" },
             { account: "6502", label: "Autres charges des dettes" },
@@ -835,880 +836,879 @@
               }
             ]
           },
-          // ... (Les 28 autres exercices suivent)
           // Page 1
-  {
-    id: 5,
-    title: "Ex 1 - Facture Vente 50",
-    description: "Vente de marchandises à A.V.I. S.A.",
-    documents: [
-      {
-        type: 'INVOICE',
-        title: "Facture 50",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "50", date: "18/06/XX", paymentInfo: "10 jours nets" },
-          lines: [{ qty: 100, desc: "Produit B", pu: "10,00", total: "1.000,00" }],
-          totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1000", totalVat: "210", toPay: "1210" }
-        }
-      },
-      {
-        type: 'BANK_EXTRACT', title: "Extrait n°33",
-        content: {
-          account: "068-4567890-02", prevDate: "20/06/XX", prevBalance: "320,00",
-          transactions: [{ date: "21/06/XX", desc: "Virement AVI", amount: "1.210,00" }],
-          newDate: "25/06/XX", newBalance: "1.530,00"
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "18/06/N",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1000' },
-          { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '210' },
-          { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' }
-        ]
-      },
-      {
-        type: JournalType.FINANCIER, defaultDate: "25/06/N",
-        solution: [
-          { id: 's1', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1210' }
-        ]
-      }
-    ]
-  },
-  // Page 2
-  {
-    id: 6,
-    title: "Ex 2 - Facture Vente 51",
-    description: "Prestation de service avec RRR.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 51",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" }, 
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "51", date: "20/06/XX", paymentInfo: "10 jours nets" },
-          lines: [{ qty: 1, desc: "Prestation de service", pu: "1500", total: "1500" }, { qty: "", desc: "RRR", pu: "", total: "-150" }],
-          totals: { bases: [{ rate: "21%", base: "1350", tax: "283,50" }], totalExcl: "1350", totalVat: "283,50", toPay: "1633,50" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "20/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7070', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1350' },
-          { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '283,50' },
-          { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1633,50', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 3
-  {
-    id: 7,
-    title: "Ex 3 - Achat Intra-comm (Latoure)",
-    description: "Acquisition intra-communautaire (France).",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 1569",
-        content: {
-          sender: { name: "LATOURE", address: ["Chée de France 18", "Paris - France"], vat: "FR 12 716 672 051" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "1569", date: "15/06/XX", paymentInfo: "30 jours nets" },
-          lines: [{ qty: 400, desc: "Produit B", pu: "10", total: "4000" }, { qty: "", desc: "RRR", pu: "", total: "-400" }],
-          totals: { bases: [], totalExcl: "3600", totalVat: "0", toPay: "3600" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "Art 138 par 1 de la directive TVA" } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "15/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6040', declTva: '81+86', codePopsy: '21IM', label: '', debit: '3600', credit: '' },
-          { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '756', credit: '' },
-          { id: 's3', accountNumber: '4511', declTva: '55', codePopsy: '', label: 'TVA A PAYER IC', debit: '', credit: '756' },
-          { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '3600' }
-        ]
-      }
-    ]
-  },
-  // Page 4
-  {
-    id: 8,
-    title: "Ex 4 - Vente Intra-comm (Latoure)",
-    description: "Livraison intra-communautaire (France).",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 55",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "LATOURE", address: ["Chée de France 18", "Paris - France"], vat: "FR 12 716 672 051" },
-          details: { number: "55", date: "15/06/XX", paymentInfo: "30 jours nets" },
-          lines: [{ qty: 400, desc: "Produit B", pu: "10", total: "4000" }, { qty: "", desc: "RRR", pu: "", total: "-400" }],
-          totals: { bases: [], totalExcl: "3600", totalVat: "0", toPay: "3600" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "Exonération – art 39bis CTVA" } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "15/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '46', codePopsy: 'I0', label: '', debit: '', credit: '3600' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '3600', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 5
-  {
-    id: 9,
-    title: "Ex 5 - Achat Import (Suisse)",
-    description: "Importation de marchandises (Suisse).",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 15",
-        content: {
-          sender: { name: "B.E.I.", address: ["Chemin de Juinville 26", "1216 Cointrin", "Suisse"], vat: "CH 16 672 051" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "15", date: "25/06/XX", paymentInfo: "30 jours nets" },
-          lines: [{ qty: 1, desc: "Produit B", pu: "15.000", total: "15.000" }],
-          totals: { bases: [], totalExcl: "15.000", totalVat: "", toPay: "15.000" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "25/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6040', declTva: '81+87', codePopsy: '21XM', label: '', debit: '15000', credit: '' },
-          { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '3150', credit: '' },
-          { id: 's3', accountNumber: '4512', declTva: '57', codePopsy: '', label: 'TVA A PAYER imp', debit: '', credit: '3150' },
-          { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '15000' }
-        ]
-      }
-    ]
-  },
-  // Page 6
-  {
-    id: 10,
-    title: "Ex 6 - Vente Export (Suisse)",
-    description: "Exportation de marchandises.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 60",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "B.E.I.", address: ["Chemin de Juinville 26", "1216 Cointrin", "Suisse"], vat: "CH 16 672 051" },
-          details: { number: "60", date: "25/06/XX", paymentInfo: "30 jours nets" },
-          lines: [{ qty: 1, desc: "Produit B", pu: "15.000", total: "15.000" }],
-          totals: { bases: [], totalExcl: "15.000", totalVat: "0", toPay: "15.000" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "ART 39 CTVA" } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "25/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '47', codePopsy: 'X0', label: '', debit: '', credit: '15000' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '15000', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 7
-  {
-    id: 11,
-    title: "Ex 7 - Achat Cocontractant",
-    description: "Nettoyage locaux (travaux immobiliers).",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 789",
-        content: {
-          sender: { name: "Cleanup", address: ["Chée de France 18", "6000 Charleroi"], vat: "BE 0424.850.991" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "789", date: "11/06/XX", paymentInfo: "A payer" },
-          lines: [{ qty: 1, desc: "Nettoyage de vos locaux", pu: "750", total: "750" }],
-          totals: { bases: [{ rate: "21%", base: "750", tax: "0 (Cocontractant)" }], totalExcl: "750", totalVat: "0", toPay: "750" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "Taxe à acquitter par le cocontractant – AUTOLIQUIDATION" } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "11/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6106', declTva: '82+87', codePopsy: '21CS', label: '', debit: '750', credit: '' },
-          { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '157,50', credit: '' },
-          { id: 's3', accountNumber: '4513', declTva: '56', codePopsy: '', label: 'TVA A PAYER co', debit: '', credit: '157,50' },
-          { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '750' }
-        ]
-      }
-    ]
-  },
-  // Page 8
-  {
-    id: 12,
-    title: "Ex 8 - Vente Cocontractant",
-    description: "Vente de services avec report de charge (cocontractant).",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 62",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "62", date: "11/06/XX", paymentInfo: "A payer" },
-          lines: [{ qty: 1, desc: "Nettoyage de vos locaux", pu: "750", total: "750" }],
-          totals: { bases: [], totalExcl: "750", totalVat: "0", toPay: "750" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "Taxe à acquitter par le cocontractant – AUTOLIQUIDATION" } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "11/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7070', declTva: '45', codePopsy: 'C0', label: '', debit: '', credit: '750' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '750', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 9
-  {
-    id: 13,
-    title: "Ex 9 - NC sur Achat",
-    description: "Retour de marchandises (Produit B).",
-    documents: [
-      {
-        type: 'INVOICE', title: "NOTE DE CREDIT N°3",
-        content: {
-          sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "3", date: "20/06/XX", paymentInfo: "Total à rembourser" },
-          lines: [{ qty: 600, desc: "Retour produit B", pu: "10", total: "6.000" }],
-          totals: { bases: [{ rate: "21%", base: "6000", tax: "1260" }], totalExcl: "6000", totalVat: "1260", toPay: "7260" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "20/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6040', declTva: '81(-)+85', codePopsy: '21M', label: '', debit: '', credit: '6000' },
-          { id: 's2', accountNumber: '4514', declTva: '63', codePopsy: '', label: '', debit: '', credit: '1260' },
-          { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '7260', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 10
-  {
-    id: 14,
-    title: "Ex 10 - NC sur Vente",
-    description: "Retour de marchandises de A.V.I.",
-    documents: [
-      {
-        type: 'INVOICE', title: "NOTE DE CREDIT N°20",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "20", date: "26/06/XX", paymentInfo: "Total à rembourser" },
-          lines: [{ qty: 600, desc: "Retour produit B", pu: "10", total: "6000" }],
-          totals: { bases: [{ rate: "21%", base: "6000", tax: "1260" }], totalExcl: "6000", totalVat: "1260", toPay: "7260" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "26/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '49', codePopsy: '21', label: '', debit: '6000', credit: '' },
-          { id: 's2', accountNumber: '4114', declTva: '64', codePopsy: '', label: '', debit: '1260', credit: '' },
-          { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '7260' }
-        ]
-      }
-    ]
-  },
-  // Page 11
-  {
-    id: 15,
-    title: "Ex 11 - NC Achat (Remise)",
-    description: "Remise exceptionnelle obtenue.",
-    documents: [
-      {
-        type: 'INVOICE', title: "NOTE DE CREDIT N°4",
-        content: {
-          sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "4", date: "20/06/XX", paymentInfo: "Total à rembourser" },
-          lines: [{ qty: 1, desc: "Remise exceptionnelle", pu: "1000", total: "1000" }],
-          totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1000", totalVat: "210", toPay: "1210" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "20/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6080', declTva: '81(-)+85', codePopsy: '21M', label: '', debit: '', credit: '1000' },
-          { id: 's2', accountNumber: '4514', declTva: '63', codePopsy: '', label: '', debit: '', credit: '210' },
-          { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 12
-  {
-    id: 16,
-    title: "Ex 12 - NC Vente (Remise)",
-    description: "Remise exceptionnelle accordée.",
-    documents: [
-      {
-        type: 'INVOICE', title: "NOTE DE CREDIT N°22",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "22", date: "26/06/XX", paymentInfo: "Total à rembourser" },
-          lines: [{ qty: 1, desc: "Remise exceptionnelle", pu: "1000", total: "1000" }],
-          totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1000", totalVat: "210", toPay: "1210" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "26/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7080', declTva: '49', codePopsy: '21', label: '', debit: '1000', credit: '' },
-          { id: 's2', accountNumber: '4114', declTva: '64', codePopsy: '', label: '', debit: '210', credit: '' },
-          { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1210' }
-        ]
-      }
-    ]
-  },
-  // Page 13
-  {
-    id: 17,
-    title: "Ex 13 - NC Achat (Emballage)",
-    description: "Retour emballages consignés (Achat).",
-    documents: [
-      {
-        type: 'INVOICE', title: "NOTE DE CREDIT N°5",
-        content: {
-          sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "5", date: "20/06/XX", paymentInfo: "Total à rembourser" },
-          lines: [{ qty: 1, desc: "Emballage consignés", pu: "100", total: "100" }],
-          totals: { bases: [], totalExcl: "100", totalVat: "0", toPay: "100" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "20/06/n",
-        solution: [
-          { id: 's1', accountNumber: '4050', declTva: 'EX', codePopsy: '', label: '', debit: '', credit: '100' },
-          { id: 's2', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '100', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 14
-  {
-    id: 18,
-    title: "Ex 14 - NC Vente (Emballage)",
-    description: "Retour emballages consignés (Vente).",
-    documents: [
-      {
-        type: 'INVOICE', title: "NOTE DE CREDIT N°26",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "26", date: "26/06/XX", paymentInfo: "Total à rembourser" },
-          lines: [{ qty: 1, desc: "Emballage consignés", pu: "100", total: "100" }],
-          totals: { bases: [], totalExcl: "100", totalVat: "0", toPay: "100" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "26/06/n",
-        solution: [
-          { id: 's1', accountNumber: '4450', declTva: 'EX', codePopsy: '', label: '', debit: '100', credit: '' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '100' }
-        ]
-      }
-    ]
-  },
-  // Page 15
-  {
-    id: 19,
-    title: "Ex 15 - Achat + Escompte + Paiement",
-    description: "Achat avec escompte 2% pour paiement comptant.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 521",
-        content: {
-          sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" }, 
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "521", date: "25/06/XX", paymentInfo: "Escompte 2% à déduire" },
-          lines: [{ qty: 150, desc: "Produit B (net 1350)", pu: "", total: "1350" }],
-          totals: { bases: [{ rate: "21%", base: "1350", tax: "277,83" }], totalExcl: "1350", totalVat: "277,83", toPay: "1627,83" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "Paiement par carte bancaire ce jour." } },
-      { type: 'BANK_EXTRACT', title: "Extrait n°34", content: { account: "068-...", transactions: [{ date: "26/06/XX", desc: "Paiement carte", amount: "-1600,83" }] } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "25/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1350', credit: '' },
-          { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '277,83', credit: '' },
-          { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1627,83' }
-        ]
-      },
-      {
-        type: JournalType.OD, defaultDate: "25/06/n",
-        solution: [
-          { id: 's1', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '1627,83', credit: '' },
-          { id: 's2', accountNumber: '7560', declTva: '', codePopsy: '', label: '', debit: '', credit: '27' },
-          { id: 's3', accountNumber: '5501', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
-        ]
-      },
-      {
-        type: JournalType.FINANCIER, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '5501', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' },
-          { id: 's2', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
-        ]
-      }
-    ]
-  },
-  // Page 16
-  {
-    id: 20,
-    title: "Ex 16 - Vente + Escompte + Paiement",
-    description: "Vente avec escompte 2% pour paiement comptant.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 750",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" }, 
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "750", date: "07/06/XX", paymentInfo: "Escompte 2% à déduire" },
-          totals: { bases: [{ rate: "21%", base: "1350", tax: "277,83" }], totalExcl: "1350", totalVat: "277,83", toPay: "1627,83" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "Paiement par carte bancaire ce jour." } },
-      { type: 'BANK_EXTRACT', title: "Extrait n°35", content: { account: "068-...", transactions: [{ date: "26/06/XX", desc: "Paiement carte", amount: "1600,83" }] } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "07/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1350' },
-          { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '277,83' },
-          { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1627,83' }
-        ]
-      },
-      {
-        type: JournalType.OD, defaultDate: "07/06/n",
-        solution: [
-          { id: 's1', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1627,83' },
-          { id: 's2', accountNumber: '6530', declTva: '', codePopsy: '', label: '', debit: '27', credit: '' },
-          { id: 's3', accountNumber: '5400', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' }
-        ]
-      },
-      {
-        type: JournalType.FINANCIER, defaultDate: "26/06/n",
-        solution: [
-          { id: 's1', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' },
-          { id: 's2', accountNumber: '5400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
-        ]
-      }
-    ]
-  },
-  // Page 17
-  {
-    id: 21,
-    title: "Ex 17 - Achat Escompte Ferme",
-    description: "Escompte ferme déduit directement sur la facture.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 888",
-        content: {
-          sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          details: { number: "888", date: "30/06/XX" },
-          lines: [{ qty: 150, desc: "Produit B", pu: "10", total: "1500" }, { qty: "", desc: "Escompte ferme", pu: "", total: "-27" }],
-          totals: { bases: [{ rate: "21%", base: "1323 (Net)", tax: "277,83" }], totalExcl: "1323", totalVat: "277,83", toPay: "1600,83" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1350', credit: '' },
-          { id: 's2', accountNumber: '7560', declTva: '81(-)', codePopsy: '21S', label: '', debit: '', credit: '27' },
-          { id: 's3', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '277,83', credit: '' },
-          { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
-        ]
-      }
-    ]
-  },
-  // Page 18
-  {
-    id: 22,
-    title: "Ex 18 - Vente Escompte Ferme",
-    description: "Escompte ferme déduit directement sur la facture.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 86",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "86", date: "30/06/XX" },
-          lines: [{ qty: 150, desc: "Produit B", pu: "10", total: "1500" }, { qty: "", desc: "Escompte ferme", pu: "", total: "-27" }],
-          totals: { bases: [{ rate: "21%", base: "1323", tax: "277,83" }], totalExcl: "1323", totalVat: "277,83", toPay: "1600,83" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1350' },
-          { id: 's2', accountNumber: '6530', declTva: '03(-)', codePopsy: '21', label: '', debit: '27', credit: '' },
-          { id: 's3', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '277,83' },
-          { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 19
-  {
-    id: 23,
-    title: "Ex 19 - Achat + Emballages",
-    description: "Achat avec frais de transport et emballages consignés.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 960",
-        content: {
-          sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          lines: [
-            { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
-            { qty: 1, desc: "Transport", pu: "100", total: "100" },
-            { qty: "", desc: "Emballages consignés", pu: "", total: "50" }
-          ],
-          totals: { bases: [{ rate: "21%", base: "1100", tax: "231" }], totalExcl: "1150 (Total net)", totalVat: "231", toPay: "1381" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1100', credit: '' },
-          { id: 's2', accountNumber: '4050', declTva: 'EX', codePopsy: '', label: '', debit: '50', credit: '' },
-          { id: 's3', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '231', credit: '' },
-          { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1381' }
-        ]
-      }
-    ]
-  },
-  // Page 20
-  {
-    id: 24,
-    title: "Ex 20 - Vente + Emballages",
-    description: "Vente avec frais de transport et emballages consignés.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 100",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          lines: [
-            { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
-            { qty: 1, desc: "Transport", pu: "100", total: "100" },
-            { qty: "", desc: "Emballages consignés", pu: "", total: "50" }
-          ],
-          totals: { bases: [{ rate: "21%", base: "1100", tax: "231" }], totalExcl: "1150", totalVat: "231", toPay: "1381" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1100' },
-          { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '231' },
-          { id: 's3', accountNumber: '4450', declTva: '', codePopsy: '', label: '', debit: '', credit: '50' },
-          { id: 's4', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1381', credit: '' }
-        ]
-      }
-    ]
-  },
-  // Page 21
-  {
-    id: 25,
-    title: "Ex 21 - Achat + Emballages Vendus",
-    description: "Achat avec emballages vendus (non consignés).",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 1012",
-        content: {
-          sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" }, 
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          lines: [
-            { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
-            { qty: 1, desc: "Transport", pu: "100", total: "100" },
-            { qty: "", desc: "Emballages vendus", pu: "", total: "50" }
-          ],
-          totals: { bases: [{ rate: "21%", base: "1150", tax: "241,50" }], totalExcl: "1150", totalVat: "241,50", toPay: "1391,50" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1150', credit: '' },
-          { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '241,50', credit: '' },
-          { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1391,50' }
-        ]
-      }
-    ]
-  },
-  // Page 22
-  {
-    id: 26,
-    title: "Ex 22 - Vente + Emballages Vendus",
-    description: "Vente avec emballages vendus (non consignés).",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 115",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          lines: [
-            { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
-            { qty: 1, desc: "Transport", pu: "100", total: "100" },
-            { qty: "", desc: "Emballages vendus", pu: "", total: "50" }
-          ],
-          totals: { bases: [{ rate: "21%", base: "1150", tax: "241,50" }], totalExcl: "1150", totalVat: "241,50", toPay: "1391,50" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '7000', declTva: '21', codePopsy: '21', label: '', debit: '', credit: '1150' },
-          { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '241,50' },
-          { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1391,50' }
-        ]
-      }
-    ]
-  },
-  // Page 23
-  {
-    id: 27,
-    title: "Ex 23 - Achat Voiture",
-    description: "Achat GOLF VW. Déductibilité TVA 50%.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 120",
-        content: {
-          sender: { name: "Garage Zebra", address: ["rue de la Panne 14", "7000 MONS"], vat: "BE 0202-239-951" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          lines: [{ qty: "", desc: "ACHAT GOLF VW", pu: "", total: "20.000" }],
-          totals: { bases: [{ rate: "21%", base: "20.000", tax: "4.200" }], totalExcl: "20.000", totalVat: "4.200", toPay: "24.200" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "29/06/n",
-        solution: [
-          { id: 's1', accountNumber: '2410', declTva: '83', codePopsy: '21ND', label: '', debit: '22.100', credit: '' },
-          { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '2100', credit: '' },
-          { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '24200' }
-        ]
-      }
-    ]
-  },
-  // Page 24
-  {
-    id: 28,
-    title: "Ex 24 - Entretien Voiture",
-    description: "Entretien GOLF VW. Déductibilité TVA 50%.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 199",
-        content: {
-          sender: { name: "Garage Zebra", address: ["rue de la Panne 14", "7000 MONS"], vat: "BE 0202-239-951" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          lines: [{ qty: "", desc: "Entretien GOLF VW", pu: "", total: "2.000" }],
-          totals: { bases: [{ rate: "21%", base: "2.000", tax: "420" }], totalExcl: "2.000", totalVat: "420", toPay: "2.420" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6108', declTva: '82', codePopsy: '21ND', label: '', debit: '2.210', credit: '' },
-          { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '210', credit: '' },
-          { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '2420' }
-        ]
-      }
-    ]
-  },
-  // Page 25
-  {
-    id: 29,
-    title: "Ex 25 - Acompte & Facture Finale",
-    description: "Facture d'acompte 1000€ + Facture finale 10.000€.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture Acompte 160",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "160", date: "30/06/XX" },
-          lines: [{ qty: 1, desc: "FACTURE ACOMPTE", pu: "", total: "1.000" }],
-          totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1.000", totalVat: "210", toPay: "1.210" }
-        }
-      },
-      { type: 'NOTE', title: "Info", content: { text: "Facture d'acompte de 1.000 € htva sur total de 10.000 €. Paiement liquide." } },
-      {
-        type: 'INVOICE', title: "Facture Finale 220",
-        content: {
-          sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
-          details: { number: "220", date: "31/08/XX" },
-          lines: [{ qty: 1, desc: "Facture finale", pu: "", total: "10.000" }, { qty: "", desc: "-Acompte", pu: "", total: "-1.000" }],
-          totals: { bases: [{ rate: "21%", base: "9000", tax: "1.890" }], totalExcl: "9.000", totalVat: "1.890", toPay: "10.890" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "30/06/N",
-        solution: [
-          { id: 's1', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' },
-          { id: 's2', accountNumber: '4600', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1000' },
-          { id: 's3', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '210' },
-        ]
-      },
-      {
-        type: JournalType.CAISSE, defaultDate: "30/06/N",
-        solution: [
-          { id: 's1', accountNumber: '5700', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1210' },
-        ]
-      },
-      {
-        type: JournalType.VENTE, defaultDate: "31/08/N",
-        solution: [
-          { id: 's1', accountNumber: '4600', declTva: '03(-)', codePopsy: '21', label: '', debit: '1000', credit: '' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '10890', credit: '' },
-          { id: 's3', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '10.000' },
-          { id: 's4', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '1.890' },
-        ]
-      }
-    ]
-  },
-  // Page 26
-  {
-    id: 30,
-    title: "Ex 26 - Vente Comptoir",
-    description: "Vente au comptoir (TVA 21%) 100€ TVAC.",
-    documents: [
-      { type: 'NOTE', title: "Énoncé", content: { text: "Vous réalisez une vente le 30/06 au comptoir (TVA 21%) d'un montant de 100 € TVAC.\nLe client vous paie en liquide." } }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.VENTE, defaultDate: "30/06/N",
-        solution: [
-          { id: 's1', accountNumber: '4000', declTva: '', codePopsy: '', label: 'Client comptoir', debit: '100', credit: '' },
-          { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '17,36' },
-          { id: 's3', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '82,64' },
-        ]
-      },
-      {
-        type: JournalType.FINANCIER, defaultDate: "30/06/N",
-        solution: [
-          { id: 's1', accountNumber: '5700', declTva: '', codePopsy: '', label: '', debit: '100', credit: '' },
-          { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '100' },
-        ]
-      }
-    ]
-  },
-  // Page 27
-  {
-    id: 31,
-    title: "Ex 27 - Achat Whisky",
-    description: "Achat de whisky. TVA non déductible.",
-    documents: [
-      {
-        type: 'INVOICE', title: "Facture 78",
-        content: {
-          sender: { name: "Distillerie prestigue", address: ["Chée de France 18", "6000 Charleroi"], vat: "BE 0424.850.991" },
-          receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
-          lines: [{ qty: 1, desc: "whisky", pu: "150", total: "150" }],
-          totals: { bases: [{ rate: "21%", base: "150", tax: "31,5" }], totalExcl: "150", totalVat: "31,5", toPay: "181,50" }
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.ACHAT, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6168', declTva: '82', codePopsy: '21ND100S', label: '', debit: '181,50', credit: '' },
-          { id: 's2', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '181,50' },
-        ]
-      }
-    ]
-  },
-  // Page 28
-  {
-    id: 32,
-    title: "Ex 28 - Loyer",
-    description: "Paiement du loyer.",
-    documents: [
-      {
-        type: 'BANK_EXTRACT', title: "Extrait n°396",
-        content: {
-          account: "068-4567890-02", prevDate: "30/06/XX", prevBalance: "1.530",
-          transactions: [{ date: "30/06/XX", desc: "Loyer du bâtiment", amount: "-560" }],
-          newDate: "02/07/XX", newBalance: "970"
-        }
-      }
-    ],
-    requiredJournals: [
-      {
-        type: JournalType.FINANCIER, defaultDate: "30/06/n",
-        solution: [
-          { id: 's1', accountNumber: '6101', declTva: '', codePopsy: '', label: '', debit: '560', credit: '' },
-          { id: 's2', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '', credit: '560' },
-        ]
-      }
-    ]
-  }
-];
+          {
+            id: 5,
+            title: "Ex 1 - Facture Vente 50",
+            description: "Vente de marchandises à A.V.I. S.A.",
+            documents: [
+              {
+                type: 'INVOICE',
+                title: "Facture 50",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "50", date: "18/06/XX", paymentInfo: "10 jours nets" },
+                  lines: [{ qty: 100, desc: "Produit B", pu: "10,00", total: "1.000,00" }],
+                  totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1000", totalVat: "210", toPay: "1210" }
+                }
+              },
+              {
+                type: 'BANK_EXTRACT', title: "Extrait n°33",
+                content: {
+                  account: "068-4567890-02", prevDate: "20/06/XX", prevBalance: "320,00",
+                  transactions: [{ date: "21/06/XX", desc: "Virement AVI", amount: "1.210,00" }],
+                  newDate: "25/06/XX", newBalance: "1.530,00"
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "18/06/N",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1000' },
+                  { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '210' },
+                  { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' }
+                ]
+              },
+              {
+                type: JournalType.FINANCIER, defaultDate: "25/06/N",
+                solution: [
+                  { id: 's1', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1210' }
+                ]
+              }
+            ]
+          },
+          // Page 2
+          {
+            id: 6,
+            title: "Ex 2 - Facture Vente 51",
+            description: "Prestation de service avec RRR.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 51",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" }, 
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "51", date: "20/06/XX", paymentInfo: "10 jours nets" },
+                  lines: [{ qty: 1, desc: "Prestation de service", pu: "1500", total: "1500" }, { qty: "", desc: "RRR", pu: "", total: "-150" }],
+                  totals: { bases: [{ rate: "21%", base: "1350", tax: "283,50" }], totalExcl: "1350", totalVat: "283,50", toPay: "1633,50" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "20/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7070', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1350' },
+                  { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '283,50' },
+                  { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1633,50', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 3
+          {
+            id: 7,
+            title: "Ex 3 - Achat Intra-comm (Latoure)",
+            description: "Acquisition intra-communautaire (France).",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 1569",
+                content: {
+                  sender: { name: "LATOURE", address: ["Chée de France 18", "Paris - France"], vat: "FR 12 716 672 051" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "1569", date: "15/06/XX", paymentInfo: "30 jours nets" },
+                  lines: [{ qty: 400, desc: "Produit B", pu: "10", total: "4000" }, { qty: "", desc: "RRR", pu: "", total: "-400" }],
+                  totals: { bases: [], totalExcl: "3600", totalVat: "0", toPay: "3600" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "Art 138 par 1 de la directive TVA" } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "15/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6040', declTva: '81+86', codePopsy: '21IM', label: '', debit: '3600', credit: '' },
+                  { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '756', credit: '' },
+                  { id: 's3', accountNumber: '4511', declTva: '55', codePopsy: '', label: 'TVA A PAYER IC', debit: '', credit: '756' },
+                  { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '3600' }
+                ]
+              }
+            ]
+          },
+          // Page 4
+          {
+            id: 8,
+            title: "Ex 4 - Vente Intra-comm (Latoure)",
+            description: "Livraison intra-communautaire (France).",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 55",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "LATOURE", address: ["Chée de France 18", "Paris - France"], vat: "FR 12 716 672 051" },
+                  details: { number: "55", date: "15/06/XX", paymentInfo: "30 jours nets" },
+                  lines: [{ qty: 400, desc: "Produit B", pu: "10", total: "4000" }, { qty: "", desc: "RRR", pu: "", total: "-400" }],
+                  totals: { bases: [], totalExcl: "3600", totalVat: "0", toPay: "3600" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "Exonération – art 39bis CTVA" } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "15/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '46', codePopsy: 'I0', label: '', debit: '', credit: '3600' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '3600', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 5
+          {
+            id: 9,
+            title: "Ex 5 - Achat Import (Suisse)",
+            description: "Importation de marchandises (Suisse).",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 15",
+                content: {
+                  sender: { name: "B.E.I.", address: ["Chemin de Juinville 26", "1216 Cointrin", "Suisse"], vat: "CH 16 672 051" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "15", date: "25/06/XX", paymentInfo: "30 jours nets" },
+                  lines: [{ qty: 1, desc: "Produit B", pu: "15.000", total: "15.000" }],
+                  totals: { bases: [], totalExcl: "15.000", totalVat: "", toPay: "15.000" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "25/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6040', declTva: '81+87', codePopsy: '21XM', label: '', debit: '15000', credit: '' },
+                  { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '3150', credit: '' },
+                  { id: 's3', accountNumber: '4512', declTva: '57', codePopsy: '', label: 'TVA A PAYER imp', debit: '', credit: '3150' },
+                  { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '15000' }
+                ]
+              }
+            ]
+          },
+          // Page 6
+          {
+            id: 10,
+            title: "Ex 6 - Vente Export (Suisse)",
+            description: "Exportation de marchandises.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 60",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "B.E.I.", address: ["Chemin de Juinville 26", "1216 Cointrin", "Suisse"], vat: "CH 16 672 051" },
+                  details: { number: "60", date: "25/06/XX", paymentInfo: "30 jours nets" },
+                  lines: [{ qty: 1, desc: "Produit B", pu: "15.000", total: "15.000" }],
+                  totals: { bases: [], totalExcl: "15.000", totalVat: "0", toPay: "15.000" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "ART 39 CTVA" } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "25/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '47', codePopsy: 'X0', label: '', debit: '', credit: '15000' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '15000', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 7
+          {
+            id: 11,
+            title: "Ex 7 - Achat Cocontractant",
+            description: "Nettoyage locaux (travaux immobiliers).",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 789",
+                content: {
+                  sender: { name: "Cleanup", address: ["Chée de France 18", "6000 Charleroi"], vat: "BE 0424.850.991" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "789", date: "11/06/XX", paymentInfo: "A payer" },
+                  lines: [{ qty: 1, desc: "Nettoyage de vos locaux", pu: "750", total: "750" }],
+                  totals: { bases: [{ rate: "21%", base: "750", tax: "0 (Cocontractant)" }], totalExcl: "750", totalVat: "0", toPay: "750" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "Taxe à acquitter par le cocontractant – AUTOLIQUIDATION" } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "11/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6106', declTva: '82+87', codePopsy: '21CS', label: '', debit: '750', credit: '' },
+                  { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '157,50', credit: '' },
+                  { id: 's3', accountNumber: '4513', declTva: '56', codePopsy: '', label: 'TVA A PAYER co', debit: '', credit: '157,50' },
+                  { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '750' }
+                ]
+              }
+            ]
+          },
+          // Page 8
+          {
+            id: 12,
+            title: "Ex 8 - Vente Cocontractant",
+            description: "Vente de services avec report de charge (cocontractant).",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 62",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "62", date: "11/06/XX", paymentInfo: "A payer" },
+                  lines: [{ qty: 1, desc: "Nettoyage de vos locaux", pu: "750", total: "750" }],
+                  totals: { bases: [], totalExcl: "750", totalVat: "0", toPay: "750" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "Taxe à acquitter par le cocontractant – AUTOLIQUIDATION" } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "11/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7070', declTva: '45', codePopsy: 'C0', label: '', debit: '', credit: '750' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '750', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 9
+          {
+            id: 13,
+            title: "Ex 9 - NC sur Achat",
+            description: "Retour de marchandises (Produit B).",
+            documents: [
+              {
+                type: 'INVOICE', title: "NOTE DE CREDIT N°3",
+                content: {
+                  sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "3", date: "20/06/XX", paymentInfo: "Total à rembourser" },
+                  lines: [{ qty: 600, desc: "Retour produit B", pu: "10", total: "6.000" }],
+                  totals: { bases: [{ rate: "21%", base: "6000", tax: "1260" }], totalExcl: "6000", totalVat: "1260", toPay: "7260" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "20/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6040', declTva: '81(-)+85', codePopsy: '21M', label: '', debit: '', credit: '6000' },
+                  { id: 's2', accountNumber: '4514', declTva: '63', codePopsy: '', label: '', debit: '', credit: '1260' },
+                  { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '7260', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 10
+          {
+            id: 14,
+            title: "Ex 10 - NC sur Vente",
+            description: "Retour de marchandises de A.V.I.",
+            documents: [
+              {
+                type: 'INVOICE', title: "NOTE DE CREDIT N°20",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "20", date: "26/06/XX", paymentInfo: "Total à rembourser" },
+                  lines: [{ qty: 600, desc: "Retour produit B", pu: "10", total: "6000" }],
+                  totals: { bases: [{ rate: "21%", base: "6000", tax: "1260" }], totalExcl: "6000", totalVat: "1260", toPay: "7260" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "26/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '49', codePopsy: '21', label: '', debit: '6000', credit: '' },
+                  { id: 's2', accountNumber: '4114', declTva: '64', codePopsy: '', label: '', debit: '1260', credit: '' },
+                  { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '7260' }
+                ]
+              }
+            ]
+          },
+          // Page 11
+          {
+            id: 15,
+            title: "Ex 11 - NC Achat (Remise)",
+            description: "Remise exceptionnelle obtenue.",
+            documents: [
+              {
+                type: 'INVOICE', title: "NOTE DE CREDIT N°4",
+                content: {
+                  sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "4", date: "20/06/XX", paymentInfo: "Total à rembourser" },
+                  lines: [{ qty: 1, desc: "Remise exceptionnelle", pu: "1000", total: "1000" }],
+                  totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1000", totalVat: "210", toPay: "1210" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "20/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6080', declTva: '81(-)+85', codePopsy: '21M', label: '', debit: '', credit: '1000' },
+                  { id: 's2', accountNumber: '4514', declTva: '63', codePopsy: '', label: '', debit: '', credit: '210' },
+                  { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 12
+          {
+            id: 16,
+            title: "Ex 12 - NC Vente (Remise)",
+            description: "Remise exceptionnelle accordée.",
+            documents: [
+              {
+                type: 'INVOICE', title: "NOTE DE CREDIT N°22",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "22", date: "26/06/XX", paymentInfo: "Total à rembourser" },
+                  lines: [{ qty: 1, desc: "Remise exceptionnelle", pu: "1000", total: "1000" }],
+                  totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1000", totalVat: "210", toPay: "1210" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "26/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7080', declTva: '49', codePopsy: '21', label: '', debit: '1000', credit: '' },
+                  { id: 's2', accountNumber: '4114', declTva: '64', codePopsy: '', label: '', debit: '210', credit: '' },
+                  { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1210' }
+                ]
+              }
+            ]
+          },
+          // Page 13
+          {
+            id: 17,
+            title: "Ex 13 - NC Achat (Emballage)",
+            description: "Retour emballages consignés (Achat).",
+            documents: [
+              {
+                type: 'INVOICE', title: "NOTE DE CREDIT N°5",
+                content: {
+                  sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "5", date: "20/06/XX", paymentInfo: "Total à rembourser" },
+                  lines: [{ qty: 1, desc: "Emballage consignés", pu: "100", total: "100" }],
+                  totals: { bases: [], totalExcl: "100", totalVat: "0", toPay: "100" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "20/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '4050', declTva: 'EX', codePopsy: '', label: '', debit: '', credit: '100' },
+                  { id: 's2', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '100', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 14
+          {
+            id: 18,
+            title: "Ex 14 - NC Vente (Emballage)",
+            description: "Retour emballages consignés (Vente).",
+            documents: [
+              {
+                type: 'INVOICE', title: "NOTE DE CREDIT N°26",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "26", date: "26/06/XX", paymentInfo: "Total à rembourser" },
+                  lines: [{ qty: 1, desc: "Emballage consignés", pu: "100", total: "100" }],
+                  totals: { bases: [], totalExcl: "100", totalVat: "0", toPay: "100" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "26/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '4450', declTva: 'EX', codePopsy: '', label: '', debit: '100', credit: '' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '100' }
+                ]
+              }
+            ]
+          },
+          // Page 15
+          {
+            id: 19,
+            title: "Ex 15 - Achat + Escompte + Paiement",
+            description: "Achat avec escompte 2% pour paiement comptant.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 521",
+                content: {
+                  sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" }, 
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "521", date: "25/06/XX", paymentInfo: "Escompte 2% à déduire" },
+                  lines: [{ qty: 150, desc: "Produit B (net 1350)", pu: "", total: "1350" }],
+                  totals: { bases: [{ rate: "21%", base: "1350", tax: "277,83" }], totalExcl: "1350", totalVat: "277,83", toPay: "1627,83" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "Paiement par carte bancaire ce jour." } },
+              { type: 'BANK_EXTRACT', title: "Extrait n°34", content: { account: "068-...", transactions: [{ date: "26/06/XX", desc: "Paiement carte", amount: "-1600,83" }] } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "25/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1350', credit: '' },
+                  { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '277,83', credit: '' },
+                  { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1627,83' }
+                ]
+              },
+              {
+                type: JournalType.OD, defaultDate: "25/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '1627,83', credit: '' },
+                  { id: 's2', accountNumber: '7560', declTva: '', codePopsy: '', label: '', debit: '', credit: '27' },
+                  { id: 's3', accountNumber: '5501', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
+                ]
+              },
+              {
+                type: JournalType.FINANCIER, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '5501', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' },
+                  { id: 's2', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
+                ]
+              }
+            ]
+          },
+          // Page 16
+          {
+            id: 20,
+            title: "Ex 16 - Vente + Escompte + Paiement",
+            description: "Vente avec escompte 2% pour paiement comptant.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 750",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" }, 
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "750", date: "07/06/XX", paymentInfo: "Escompte 2% à déduire" },
+                  totals: { bases: [{ rate: "21%", base: "1350", tax: "277,83" }], totalExcl: "1350", totalVat: "277,83", toPay: "1627,83" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "Paiement par carte bancaire ce jour." } },
+              { type: 'BANK_EXTRACT', title: "Extrait n°35", content: { account: "068-...", transactions: [{ date: "26/06/XX", desc: "Paiement carte", amount: "1600,83" }] } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "07/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1350' },
+                  { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '277,83' },
+                  { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1627,83' }
+                ]
+              },
+              {
+                type: JournalType.OD, defaultDate: "07/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1627,83' },
+                  { id: 's2', accountNumber: '6530', declTva: '', codePopsy: '', label: '', debit: '27', credit: '' },
+                  { id: 's3', accountNumber: '5400', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' }
+                ]
+              },
+              {
+                type: JournalType.FINANCIER, defaultDate: "26/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' },
+                  { id: 's2', accountNumber: '5400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
+                ]
+              }
+            ]
+          },
+          // Page 17
+          {
+            id: 21,
+            title: "Ex 17 - Achat Escompte Ferme",
+            description: "Escompte ferme déduit directement sur la facture.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 888",
+                content: {
+                  sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  details: { number: "888", date: "30/06/XX" },
+                  lines: [{ qty: 150, desc: "Produit B", pu: "10", total: "1500" }, { qty: "", desc: "Escompte ferme", pu: "", total: "-27" }],
+                  totals: { bases: [{ rate: "21%", base: "1323 (Net)", tax: "277,83" }], totalExcl: "1323", totalVat: "277,83", toPay: "1600,83" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1350', credit: '' },
+                  { id: 's2', accountNumber: '7560', declTva: '81(-)', codePopsy: '21S', label: '', debit: '', credit: '27' },
+                  { id: 's3', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '277,83', credit: '' },
+                  { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1600,83' }
+                ]
+              }
+            ]
+          },
+          // Page 18
+          {
+            id: 22,
+            title: "Ex 18 - Vente Escompte Ferme",
+            description: "Escompte ferme déduit directement sur la facture.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 86",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "86", date: "30/06/XX" },
+                  lines: [{ qty: 150, desc: "Produit B", pu: "10", total: "1500" }, { qty: "", desc: "Escompte ferme", pu: "", total: "-27" }],
+                  totals: { bases: [{ rate: "21%", base: "1323", tax: "277,83" }], totalExcl: "1323", totalVat: "277,83", toPay: "1600,83" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1350' },
+                  { id: 's2', accountNumber: '6530', declTva: '03(-)', codePopsy: '21', label: '', debit: '27', credit: '' },
+                  { id: 's3', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '277,83' },
+                  { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '1600,83', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 19
+          {
+            id: 23,
+            title: "Ex 19 - Achat + Emballages",
+            description: "Achat avec frais de transport et emballages consignés.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 960",
+                content: {
+                  sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  lines: [
+                    { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
+                    { qty: 1, desc: "Transport", pu: "100", total: "100" },
+                    { qty: "", desc: "Emballages consignés", pu: "", total: "50" }
+                  ],
+                  totals: { bases: [{ rate: "21%", base: "1100", tax: "231" }], totalExcl: "1150 (Total net)", totalVat: "231", toPay: "1381" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1100', credit: '' },
+                  { id: 's2', accountNumber: '4050', declTva: 'EX', codePopsy: '', label: '', debit: '50', credit: '' },
+                  { id: 's3', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '231', credit: '' },
+                  { id: 's4', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1381' }
+                ]
+              }
+            ]
+          },
+          // Page 20
+          {
+            id: 24,
+            title: "Ex 20 - Vente + Emballages",
+            description: "Vente avec frais de transport et emballages consignés.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 100",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  lines: [
+                    { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
+                    { qty: 1, desc: "Transport", pu: "100", total: "100" },
+                    { qty: "", desc: "Emballages consignés", pu: "", total: "50" }
+                  ],
+                  totals: { bases: [{ rate: "21%", base: "1100", tax: "231" }], totalExcl: "1150", totalVat: "231", toPay: "1381" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1100' },
+                  { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '231' },
+                  { id: 's3', accountNumber: '4450', declTva: '', codePopsy: '', label: '', debit: '', credit: '50' },
+                  { id: 's4', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1381', credit: '' }
+                ]
+              }
+            ]
+          },
+          // Page 21
+          {
+            id: 25,
+            title: "Ex 21 - Achat + Emballages Vendus",
+            description: "Achat avec emballages vendus (non consignés).",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 1012",
+                content: {
+                  sender: { name: "COTUBEX", address: ["rue des Fabriques 27-31", "1400 NIVELLES"], vat: "BE 0861.775.912" }, 
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  lines: [
+                    { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
+                    { qty: 1, desc: "Transport", pu: "100", total: "100" },
+                    { qty: "", desc: "Emballages vendus", pu: "", total: "50" }
+                  ],
+                  totals: { bases: [{ rate: "21%", base: "1150", tax: "241,50" }], totalExcl: "1150", totalVat: "241,50", toPay: "1391,50" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6040', declTva: '81', codePopsy: '21M', label: '', debit: '1150', credit: '' },
+                  { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '241,50', credit: '' },
+                  { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '1391,50' }
+                ]
+              }
+            ]
+          },
+          // Page 22
+          {
+            id: 26,
+            title: "Ex 22 - Vente + Emballages Vendus",
+            description: "Vente avec emballages vendus (non consignés).",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 115",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  lines: [
+                    { qty: 100, desc: "Produit B", pu: "10", total: "1000" },
+                    { qty: 1, desc: "Transport", pu: "100", total: "100" },
+                    { qty: "", desc: "Emballages vendus", pu: "", total: "50" }
+                  ],
+                  totals: { bases: [{ rate: "21%", base: "1150", tax: "241,50" }], totalExcl: "1150", totalVat: "241,50", toPay: "1391,50" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '7000', declTva: '21', codePopsy: '21', label: '', debit: '', credit: '1150' },
+                  { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '241,50' },
+                  { id: 's3', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1391,50' }
+                ]
+              }
+            ]
+          },
+          // Page 23
+          {
+            id: 27,
+            title: "Ex 23 - Achat Voiture",
+            description: "Achat GOLF VW. Déductibilité TVA 50%.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 120",
+                content: {
+                  sender: { name: "Garage Zebra", address: ["rue de la Panne 14", "7000 MONS"], vat: "BE 0202-239-951" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  lines: [{ qty: "", desc: "ACHAT GOLF VW", pu: "", total: "20.000" }],
+                  totals: { bases: [{ rate: "21%", base: "20.000", tax: "4.200" }], totalExcl: "20.000", totalVat: "4.200", toPay: "24.200" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "29/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '2410', declTva: '83', codePopsy: '21ND', label: '', debit: '22.100', credit: '' },
+                  { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '2100', credit: '' },
+                  { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '24200' }
+                ]
+              }
+            ]
+          },
+          // Page 24
+          {
+            id: 28,
+            title: "Ex 24 - Entretien Voiture",
+            description: "Entretien GOLF VW. Déductibilité TVA 50%.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 199",
+                content: {
+                  sender: { name: "Garage Zebra", address: ["rue de la Panne 14", "7000 MONS"], vat: "BE 0202-239-951" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  lines: [{ qty: "", desc: "Entretien GOLF VW", pu: "", total: "2.000" }],
+                  totals: { bases: [{ rate: "21%", base: "2.000", tax: "420" }], totalExcl: "2.000", totalVat: "420", toPay: "2.420" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6108', declTva: '82', codePopsy: '21ND', label: '', debit: '2.210', credit: '' },
+                  { id: 's2', accountNumber: '4110', declTva: '59', codePopsy: '', label: '', debit: '210', credit: '' },
+                  { id: 's3', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '2420' }
+                ]
+              }
+            ]
+          },
+          // Page 25
+          {
+            id: 29,
+            title: "Ex 25 - Acompte & Facture Finale",
+            description: "Facture d'acompte 1000€ + Facture finale 10.000€.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture Acompte 160",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "160", date: "30/06/XX" },
+                  lines: [{ qty: 1, desc: "FACTURE ACOMPTE", pu: "", total: "1.000" }],
+                  totals: { bases: [{ rate: "21%", base: "1000", tax: "210" }], totalExcl: "1.000", totalVat: "210", toPay: "1.210" }
+                }
+              },
+              { type: 'NOTE', title: "Info", content: { text: "Facture d'acompte de 1.000 € htva sur total de 10.000 €. Paiement liquide." } },
+              {
+                type: 'INVOICE', title: "Facture Finale 220",
+                content: {
+                  sender: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  receiver: { name: "A.V.I. S.A.", address: ["rue du Collège 5", "5000 NAMUR"], vat: "BE 0895 538 345" },
+                  details: { number: "220", date: "31/08/XX" },
+                  lines: [{ qty: 1, desc: "Facture finale", pu: "", total: "10.000" }, { qty: "", desc: "-Acompte", pu: "", total: "-1.000" }],
+                  totals: { bases: [{ rate: "21%", base: "9000", tax: "1.890" }], totalExcl: "9.000", totalVat: "1.890", toPay: "10.890" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "30/06/N",
+                solution: [
+                  { id: 's1', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' },
+                  { id: 's2', accountNumber: '4600', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '1000' },
+                  { id: 's3', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '210' },
+                ]
+              },
+              {
+                type: JournalType.CAISSE, defaultDate: "30/06/N",
+                solution: [
+                  { id: 's1', accountNumber: '5700', declTva: '', codePopsy: '', label: '', debit: '1210', credit: '' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '1210' },
+                ]
+              },
+              {
+                type: JournalType.VENTE, defaultDate: "31/08/N",
+                solution: [
+                  { id: 's1', accountNumber: '4600', declTva: '03(-)', codePopsy: '21', label: '', debit: '1000', credit: '' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '10890', credit: '' },
+                  { id: 's3', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '10.000' },
+                  { id: 's4', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '1.890' },
+                ]
+              }
+            ]
+          },
+          // Page 26
+          {
+            id: 30,
+            title: "Ex 26 - Vente Comptoir",
+            description: "Vente au comptoir (TVA 21%) 100€ TVAC.",
+            documents: [
+              { type: 'NOTE', title: "Énoncé", content: { text: "Vous réalisez une vente le 30/06 au comptoir (TVA 21%) d'un montant de 100 € TVAC.\nLe client vous paie en liquide." } }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.VENTE, defaultDate: "30/06/N",
+                solution: [
+                  { id: 's1', accountNumber: '4000', declTva: '', codePopsy: '', label: 'Client comptoir', debit: '100', credit: '' },
+                  { id: 's2', accountNumber: '4510', declTva: '54', codePopsy: '', label: '', debit: '', credit: '17,36' },
+                  { id: 's3', accountNumber: '7000', declTva: '03', codePopsy: '21', label: '', debit: '', credit: '82,64' },
+                ]
+              },
+              {
+                type: JournalType.FINANCIER, defaultDate: "30/06/N",
+                solution: [
+                  { id: 's1', accountNumber: '5700', declTva: '', codePopsy: '', label: '', debit: '100', credit: '' },
+                  { id: 's2', accountNumber: '4000', declTva: '', codePopsy: '', label: '', debit: '', credit: '100' },
+                ]
+              }
+            ]
+          },
+          // Page 27
+          {
+            id: 31,
+            title: "Ex 27 - Achat Whisky",
+            description: "Achat de whisky. TVA non déductible.",
+            documents: [
+              {
+                type: 'INVOICE', title: "Facture 78",
+                content: {
+                  sender: { name: "Distillerie prestigue", address: ["Chée de France 18", "6000 Charleroi"], vat: "BE 0424.850.991" },
+                  receiver: { name: "SPRL OUTISUD", address: ["Chée Romaine 147", "7500 TOURNAI"], vat: "BE 0415.776.939" },
+                  lines: [{ qty: 1, desc: "whisky", pu: "150", total: "150" }],
+                  totals: { bases: [{ rate: "21%", base: "150", tax: "31,5" }], totalExcl: "150", totalVat: "31,5", toPay: "181,50" }
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.ACHAT, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6168', declTva: '82', codePopsy: '21ND100S', label: '', debit: '181,50', credit: '' },
+                  { id: 's2', accountNumber: '4400', declTva: '', codePopsy: '', label: '', debit: '', credit: '181,50' },
+                ]
+              }
+            ]
+          },
+          // Page 28
+          {
+            id: 32,
+            title: "Ex 28 - Loyer",
+            description: "Paiement du loyer.",
+            documents: [
+              {
+                type: 'BANK_EXTRACT', title: "Extrait n°396",
+                content: {
+                  account: "068-4567890-02", prevDate: "30/06/XX", prevBalance: "1.530",
+                  transactions: [{ date: "30/06/XX", desc: "Loyer du bâtiment", amount: "-560" }],
+                  newDate: "02/07/XX", newBalance: "970"
+                }
+              }
+            ],
+            requiredJournals: [
+              {
+                type: JournalType.FINANCIER, defaultDate: "30/06/n",
+                solution: [
+                  { id: 's1', accountNumber: '6101', declTva: '', codePopsy: '', label: '', debit: '560', credit: '' },
+                  { id: 's2', accountNumber: '5500', declTva: '', codePopsy: '', label: '', debit: '', credit: '560' },
+                ]
+              }
+            ]
+          }
+        ];
 
-        // --- 4. COMPOSANTS (COMPONENTS/*.TSX) ---
+        // --- 3. COMPOSANTS (LOGIQUE & UI) ---
 
         // ----- DocumentViewer Component -----
         const InvoiceViewer = ({ content }) => {
