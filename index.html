@@ -16,8 +16,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Lucide React Icons (UMD) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide-react@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest/dist/lucide-react.umd.js"></script>
 
     <style>
       /* Custom scrollbar */
@@ -83,11 +82,11 @@
         const { useState, useEffect, useRef, useMemo } = React;
         
         // Icônes Lucide (chargées via UMD)
-        const { 
-            BookOpen, ChevronRight, ChevronLeft, Eye, LogIn, AlertCircle, 
-            Printer, RotateCcw, Trophy, FileText, List, Grid, Search, 
-            X, Plus, Trash2, CheckCircle 
-        } = lucide;
+        const {
+            BookOpen, ChevronRight, ChevronLeft, Eye, LogIn, AlertCircle,
+            Printer, RotateCcw, Trophy, FileText, List, Grid, Search,
+            X, Plus, Trash2, CheckCircle
+        } = LucideReact;
 
         // --- 2. DONNÉES & CONSTANTES ---
         
