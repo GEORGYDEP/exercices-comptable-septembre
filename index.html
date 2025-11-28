@@ -14,37 +14,49 @@
 
     <!-- 2. STYLE -->
     <style>
-      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+      body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* Fond coucher de soleil */
+        background: linear-gradient(to bottom, 
+          #FF6B6B 0%,      /* Rouge-orangé en haut */
+          #FF8E53 15%,     /* Orange */
+          #FFA07A 30%,     /* Orange saumon */
+          #FFB88C 45%,     /* Orange pâle */
+          #FFDAB9 60%,     /* Pêche */
+          #FFE4B5 75%,     /* Moccasin */
+          #87CEEB 90%,     /* Bleu ciel */
+          #4A90E2 100%     /* Bleu plus foncé en bas */
+        );
+        background-attachment: fixed;
+        min-height: 100vh;
+      }
       
       /* Impression propre */
+      .print-only { display: none; }
+      
       @media print {
-        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        body { 
+          -webkit-print-color-adjust: exact; 
+          print-color-adjust: exact;
+          background: white !important; /* Pas de fond en impression */
+        }
         .print-hidden { display: none !important; }
-        .print-block { display: block !important; }
+        .print-only { display: block !important; }
         .no-break { break-inside: avoid; }
         /* Forcer les couleurs de fond en impression */
         .bg-yellow-100 { background-color: #fef9c3 !important; }
         .bg-yellow-50 { background-color: #fefce8 !important; }
         .bg-blue-50 { background-color: #eff6ff !important; }
         .bg-orange-100 { background-color: #ffedd5 !important; }
+        .bg-gray-100 { background-color: #f3f4f6 !important; }
       }
       
       /* Police manuscrite pour les notes */
       @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
       .font-handwriting { font-family: 'Kalam', cursive; }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/"
-  }
-}
-</script>
 </head>
-<body class="bg-gray-50 text-slate-800">
+<body class="text-slate-800">
     
     <div id="root"></div>
 
@@ -56,9 +68,15 @@
         // Fonction utilitaire pour utiliser les icônes Lucide dans React
         const Icon = ({ name, size = 24, className = "" }) => {
             useEffect(() => {
-                lucide.createIcons();
-            });
-            return <i data-lucide={name} width={size} height={size} className={className}></i>;
+                try {
+                    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                        lucide.createIcons();
+                    }
+                } catch (e) {
+                    console.error('Erreur lors du chargement des icônes:', e);
+                }
+            }, [name]);
+            return <i data-lucide={name} style={{width: size, height: size}} className={className}></i>;
         };
 
         // --- DONNÉES (COPIE EXACTE DE VOS EXERCICES) ---
@@ -202,8 +220,18 @@
         const CodesPopsyModal = ({ onClose }) => (
             <Modal title="Codes Popsy" onClose={onClose}>
                 <div className="grid md:grid-cols-2 gap-4">
-                    <div><h3 className="font-bold bg-yellow-200 p-2 mb-2 rounded">Achats</h3>{CODES_POPSY.achats.map(c => <div key={c.code} className="flex text-sm border-b hover:bg-gray-50"><span className="w-16 font-bold bg-yellow-100 p-1 flex items-center justify-center border-r">{c.code}</span><span className="p-1 flex-1">{c.label}</span></div>)}</div>
-                    <div><h3 className="font-bold bg-orange-200 p-2 mb-2 rounded">Ventes</h3>{CODES_POPSY.ventes.map(c => <div key={c.code} className="flex text-sm border-b hover:bg-gray-50"><span className="w-16 font-bold bg-orange-100 p-1 flex items-center justify-center border-r">{c.code}</span><span className="p-1 flex-1">{c.label}</span></div>)}</div>
+                    <div>
+                        <h3 className="font-bold bg-yellow-200 p-2 mb-2 rounded">Achats</h3>
+                        {CODES_POPSY.achats.map(c => <div key={c.code} className="flex text-sm border-b hover:bg-gray-50"><span className="w-16 font-bold bg-yellow-100 p-1 flex items-center justify-center border-r">{c.code}</span><span className="p-1 flex-1">{c.label}</span></div>)}
+                    </div>
+                    <div>
+                        <h3 className="font-bold bg-orange-200 p-2 mb-2 rounded">Ventes</h3>
+                        {CODES_POPSY.ventes.map(c => <div key={c.code} className="flex text-sm border-b hover:bg-gray-50"><span className="w-16 font-bold bg-orange-100 p-1 flex items-center justify-center border-r">{c.code}</span><span className="p-1 flex-1">{c.label}</span></div>)}
+                    </div>
+                </div>
+                <div className="mt-4 border-t pt-4">
+                    <h3 className="font-bold bg-blue-200 p-2 mb-2 rounded">Codes Spéciaux</h3>
+                    {CODES_POPSY.divers.map(c => <div key={c.code} className="flex text-sm border-b hover:bg-gray-50 mb-2"><span className="w-16 font-bold bg-blue-100 p-1 flex items-center justify-center border-r">{c.code}</span><span className="p-1 flex-1">{c.label}</span></div>)}
                 </div>
             </Modal>
         );
@@ -335,7 +363,7 @@
 
         const PrintView = ({ userEmail, allUserAnswers }) => {
           return (
-            <div className="hidden print-block p-8 bg-white text-black print-color-adjust-exact">
+            <div className="print-only p-8 bg-white text-black">
               <div className="mb-8 border-b-2 border-black pb-4">
                 <h1 className="text-3xl font-bold">Rapport d'exercices comptables POPSY</h1>
                 <p className="text-lg mt-2">Élève : {userEmail}</p>
@@ -343,7 +371,7 @@
               </div>
 
               {LEVELS.map((level) => (
-                <div key={level.id} className="mb-8 break-inside-avoid page-break-after-auto border-b border-gray-200 pb-8">
+                <div key={level.id} className="mb-8 no-break border-b border-gray-200 pb-8">
                   <h2 className="text-xl font-bold bg-gray-100 p-2 mb-4 border-l-4 border-slate-800">
                     Niveau {level.id} : {level.title}
                   </h2>
@@ -352,7 +380,7 @@
                     {level.requiredJournals.map((journalTemplate, idx) => {
                       const solutionRows = journalTemplate.solution || [];
                       return (
-                        <div key={idx} className="border border-gray-300 rounded p-4 break-inside-avoid">
+                        <div key={idx} className="border border-gray-300 rounded p-4 no-break">
                           <h3 className="font-bold text-lg mb-2">{journalTemplate.type} - {journalTemplate.defaultDate}</h3>
                           <div className="mb-4">
                             <h4 className="text-sm font-bold text-green-800 mb-1">Solution correcte :</h4>
@@ -456,20 +484,23 @@
 
             if (isCompleted) {
                 return (
-                    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 print-hidden">
+                    <div className="min-h-screen flex flex-col items-center justify-center p-4 print-hidden">
                         <div className="bg-white p-10 rounded-2xl shadow-xl text-center max-w-2xl w-full">
                             <div className="inline-flex items-center justify-center w-24 h-24 bg-yellow-100 rounded-full text-yellow-500 mb-6">
                                 <Icon name="trophy" size={48} />
                             </div>
                             <h1 className="text-4xl font-bold text-slate-800 mb-2">Félicitations !</h1>
                             <p className="text-slate-600 text-lg mb-8">Vous avez terminé tous les exercices, <span className="font-bold text-slate-800">{userEmail.split('@')[0]}</span>.</p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-all font-semibold shadow-lg">
-                                    <Icon name="printer" size={20} /> Imprimer le rapport
+                            
+                            <div className="flex flex-col gap-4 justify-center items-center">
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="flex items-center justify-center gap-2 px-8 py-4 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-all font-semibold shadow-lg"
+                                    style={{cursor: 'pointer'}}
+                                >
+                                    <span style={{fontSize: '24px'}}>🔄</span> Rejouer
                                 </button>
-                                <button onClick={() => {setIsCompleted(false); setLevelIdx(0); setAllAnswers({}); setShowSolution(false);}} className="flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-all font-semibold">
-                                    <Icon name="rotate-ccw" size={20} /> Recommencer
-                                </button>
+                                <p className="text-sm text-gray-500 mt-2">Pour imprimer le rapport : Ctrl+P (ou Cmd+P sur Mac)</p>
                             </div>
                         </div>
                         <PrintView userEmail={userEmail} allUserAnswers={allAnswers} />
